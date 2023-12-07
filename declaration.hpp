@@ -65,7 +65,7 @@ pair<pair<int, int>, int> try_to_return_thing(int from, int to, int k, int* curr
     for(auto g:considering) {
         // g is parcel => g + N + M is the destination, we have to go throught this
         int pastThis = g + N + M;
-        if(mn > d[from][pastThis] + d[pastThis][to] && (Cap[k] - q[g - N]) > q[to - N]) {
+        if(mn > d[from][pastThis] + d[pastThis][to] && (Cap[k] + q[g - N]) > q[to - N]) {
             mn = d[from][pastThis] + d[pastThis][to];
             ori = g;
             goth = pastThis;
@@ -82,13 +82,14 @@ void initConfig() {
         //* when the current reaching node is a parcel
         if(node > N && node <= N + M) {
             bool rtg = false; // return then go
-            int go; // if have to return then go
+            int go, ori; // if have to return then go
             //* current parcel capacity us q[node - N]
             for(int k = 0; k < K; k++) {
                 int last = initRoutes[k].back();
                 if(remCap[k] >= q[node - N]) {
                     if(mn > d[last][node]) {
                         mn = d[last][node];
+                        remCap[k] -= q[node - N];
                         insRoute = k;
                         rtg = false;
                     }
@@ -102,17 +103,32 @@ void initConfig() {
                         mn = mntemp;
                         insRoute = k;
                         rtg = true;
-                        //TODO: still have goth and ori in function try_to_return_things
+                        go = gothrought.first.first;
+                        ori = gothrought.first.second;
                     }
                 }
             }
             // push to initRoute step
             if(rtg) {
-                
+                initRoutes[insRoute].push_back(go);
+                initRoutes[insRoute].push_back(node);
+                remCap[insRoute] = remCap[insRoute] + q[ori - N] - q[node - N];
             } else {
                 initRoutes[insRoute].push_back(node);
                 remCap[insRoute] -= q[node - N];
             }
+        } else if(node >= 1 && node <= N) { //* the current node has a passenger waiting
+            int mn = INT_MAX;
+            for(int k = 0; k < K; k++) {
+                int last = initRoutes[k].back();
+                if(mn > d[last][node]) {
+                    mn = d[last][node];
+                    insRoute = k;
+                }
+            }
+            initRoutes[insRoute].push_back(node);
+            initRoutes[insRoute].push_back(node + N + M);
+            
         }
     }
 }
