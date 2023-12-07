@@ -25,6 +25,7 @@ map<pair<int, int>, int> s_value; // saving_value
 vector<pair<int, int>> needtotake;
 vector<savings> save;
 vector<int> initRoutes[105], routes[105];
+vector<int> considering;
 
 // ! *********************************************************************** ! //
 
@@ -55,8 +56,8 @@ void init() {
 }
 
 pair<pair<int, int>, int> try_to_return_thing(int from, int to, int k, int* currentCapacity) {
+    considering.clear();
     int* Cap = currentCapacity;
-    vector<int> considering;
     for(auto p:initRoutes[k]) {
         if(p > N && p <= N + M && !initDeliver[p]) considering.push_back(p);
     }
@@ -113,6 +114,7 @@ void initConfig() {
                 initRoutes[insRoute].push_back(go);
                 initRoutes[insRoute].push_back(node);
                 remCap[insRoute] = remCap[insRoute] + q[ori - N] - q[node - N];
+                initDeliver[ori] = true;
             } else {
                 initRoutes[insRoute].push_back(node);
                 remCap[insRoute] -= q[node - N];
@@ -131,6 +133,19 @@ void initConfig() {
             
         }
     }
+
+    // * fulfill the initial routes
+    for(int k = 0; k < K; k++) {
+        considering.clear();
+        for(auto p:initRoutes[k]) {
+            if(p > N && p <= N + M && !initDeliver[p]) considering.push_back(p);
+        }
+        for(auto p:considering) {
+            initDeliver[p] = true;
+            initRoutes[k] .push_back(p + N + M);
+        }
+        initRoutes[k].push_back(0);
+    }
 }
 
 void printInitConfig() {
@@ -142,6 +157,14 @@ void printInitConfig() {
         cout << "i = " << i << ":\n";
         for(auto j:initRoutes[i]) cout << j << ' ';
         cout << '\n';
+    }
+    cout << "Initial sum of each route\n";
+    for(int k = 0; k < K; k++) {
+        int sum = 0;
+        for(int i = 1; i < initRoutes[k].size(); i++) {
+            sum += d[initRoutes[k][i - 1]][initRoutes[k][i]];
+        }
+        cout << "Routes " << k << " = " << sum << "\n";
     }
 }
 
