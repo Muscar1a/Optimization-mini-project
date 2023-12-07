@@ -23,7 +23,7 @@ int d[1005][1005], initDeliver[2005];
 int q[205], Q[205], remCap[205];
 map<pair<int, int>, int> s_value; // saving_value
 vector<pair<int, int>> needtotake;
-vector<savings> saving;
+vector<savings> save;
 vector<int> initRoutes[105], routes[105];
 
 // ! *********************************************************************** ! //
@@ -45,22 +45,74 @@ void init() {
     for(int i = 1; i <= 2*N + 2*M; i++) {
         for(int j = i + 1; j <= 2*N + 2*M; j++) {
             int temp = d[0][i] + d[0][j] - d[i][j];
-            saving.push_back({temp, i, j});
+            save.push_back({temp, i, j});
             s_value[{i, j}] = s_value[{j, i}] = temp;
         }
     }
-    sort(saving.begin(), saving.end(),cmp); // use in clarke-wright savings
+    sort(save.begin(), save.end(), cmp);
 
     for(int i = 0; i < K; i++) initRoutes[i].push_back(0);
 }
 
+pair<pair<int, int>, int> try_to_return_thing(int from, int to, int k, int* currentCapacity) {
+    int* Cap = currentCapacity;
+    vector<int> considering;
+    for(auto p:initRoutes[k]) {
+        if(p > N && p <= N + M && !initDeliver[p]) considering.push_back(p);
+    }
+    int mn = INT_MAX, goth, ori; //goth = go through
+    //i am return only one parcel to their destination
+    for(auto g:considering) {
+        // g is parcel => g + N + M is the destination, we have to go throught this
+        int pastThis = g + N + M;
+        if(mn > d[from][pastThis] + d[pastThis][to] && (Cap[k] - q[g - N]) > q[to - N]) {
+            mn = d[from][pastThis] + d[pastThis][to];
+            ori = g;
+            goth = pastThis;
+        }
+    }
+    return {{goth, ori}, mn};
+}
 
 void initConfig() {
     for(int i = 0; i < needtotake.size(); i++) {
-        int node = needtotake[i].second;
+        int node = needtotake[i].second;    //* => currently accessing node
+        int insRoute, mn = INT_MAX;
+                
         //* when the current reaching node is a parcel
         if(node > N && node <= N + M) {
-            
+            bool rtg = false; // return then go
+            int go; // if have to return then go
+            //* current parcel capacity us q[node - N]
+            for(int k = 0; k < K; k++) {
+                int last = initRoutes[k].back();
+                if(remCap[k] >= q[node - N]) {
+                    if(mn > d[last][node]) {
+                        mn = d[last][node];
+                        insRoute = k;
+                        rtg = false;
+                    }
+                } else {
+                    int temp = INT_MAX, tempInsRoute;
+                    bool tempRtg = false;
+                    //? try to return things
+                    pair<pair<int, int>, int> gothrought = try_to_return_thing(last, node, k, remCap);
+                    int mntemp = gothrought.second;
+                    if(mn > mntemp) {
+                        mn = mntemp;
+                        insRoute = k;
+                        rtg = true;
+                        //TODO: still have goth and ori in function try_to_return_things
+                    }
+                }
+            }
+            // push to initRoute step
+            if(rtg) {
+                
+            } else {
+                initRoutes[insRoute].push_back(node);
+                remCap[insRoute] -= q[node - N];
+            }
         }
     }
 }
@@ -76,6 +128,8 @@ void printInitConfig() {
         cout << '\n';
     }
 }
+
+
 
 // ! **************************REMINDER************************************* ! //
 
