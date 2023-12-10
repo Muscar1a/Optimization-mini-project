@@ -19,7 +19,7 @@ struct savings {
     int saving, i, j;
 };
 int K, N, M;
-int d[1005][1005], initDeliver[2005];
+int d[1005][1005], initDeliver[2005], sumRoutes[2005];
 int q[205], Q[205], remCap[205];
 map<pair<int, int>, int> s_value; // saving_value
 vector<pair<int, int>> needtotake;
@@ -146,6 +146,13 @@ void initConfig() {
         }
         initRoutes[k].push_back(0);
     }
+    for(int k = 0; k < K; k++) {
+        int sum = 0;
+        for(int i = 1; i < initRoutes[k].size(); i++) {
+            sum += d[initRoutes[k][i - 1]][initRoutes[k][i]];
+        }
+        sumRoutes[k] = sum;
+    }
 }
 
 void printInitConfig() {
@@ -160,11 +167,7 @@ void printInitConfig() {
     }
     cout << "Initial sum of each route\n";
     for(int k = 0; k < K; k++) {
-        int sum = 0;
-        for(int i = 1; i < initRoutes[k].size(); i++) {
-            sum += d[initRoutes[k][i - 1]][initRoutes[k][i]];
-        }
-        cout << "Routes " << k << " = " << sum << "\n";
+        cout << "Routes " << k << " = " << sumRoutes[k] << "\n";
     }
 }
 

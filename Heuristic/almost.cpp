@@ -1,7 +1,7 @@
 //Mus
 //#define _CRT_NONSTDC_NO_WaRNINGS
 #include <bits/stdc++.h>
-#include "declaration.hpp"
+#include "2opt.hpp"
 using namespace std;
 
 
@@ -28,6 +28,10 @@ void Enter() {
 }
 
 void solve() {
+    initConfig();
+    printInitConfig();
+    two_opt_operation();
+    printAfter2Opt();
 }
 
 int32_t main() {
@@ -41,8 +45,6 @@ int32_t main() {
     }
     Enter();
     init();
-    initConfig();
-    printInitConfig();
     solve();
     
     time(&end);
