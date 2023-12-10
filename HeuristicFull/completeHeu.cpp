@@ -12,7 +12,7 @@ typedef long double ld;
 #define all(x)          (x.begin(), x.end())
 #define MOD (ll)(1e9 + 7)
 const int maxn = 1e5 + 10, inf = 0x3f3f3f3f;
-#define taskname "almost"
+#define taskname "complete"
 
 // ! *************************DECLARATION********************************** ! //
 
@@ -255,9 +255,15 @@ void Enter() {
 
 void solve() {
     initConfig();
-    printInitConfig();
+    //printInitConfig();
     two_opt_operation();
-    printAfter2Opt();
+    //printAfter2Opt();
+    cout << K << "\n";
+    for(int k = 0; k < K; k++) {
+        cout << initRoutes[k].size() << "\n";
+        for(auto i:initRoutes[k]) cout << i << " ";
+        cout << '\n';
+    }
 }
 
 int32_t main() {
