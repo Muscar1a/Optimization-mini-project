@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "d:/GIT/optminiprj/Optimization-mini-project",
-      "program": "d:/GIT/optminiprj/Optimization-mini-project/build/Debug/outDebug",
+      "cwd": "d:/GIT/optminiprj/Optimization-mini-project/Heuristic",
+      "program": "d:/GIT/optminiprj/Optimization-mini-project/Heuristic/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
