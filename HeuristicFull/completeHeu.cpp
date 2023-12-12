@@ -1,5 +1,4 @@
 //Mus
-//Mus
 //#define _CRT_NONSTDC_NO_WaRNINGS
 #include <bits/stdc++.h>
 using namespace std;
@@ -12,7 +11,7 @@ typedef long double ld;
 #define all(x)          (x.begin(), x.end())
 #define MOD (ll)(1e9 + 7)
 const int maxn = 1e5 + 10, inf = 0x3f3f3f3f;
-#define taskname "complete"
+#define taskname "almost"
 
 // ! *************************DECLARATION********************************** ! //
 
@@ -20,8 +19,8 @@ struct savings {
     int saving, i, j;
 };
 int K, N, M;
-int d[5005][5005], initDeliver[5005], sumRoutes[5005];
-int q[505], Q[505], remCap[505];
+int d[1005][1005], initDeliver[2005], sumRoutes[2005];
+int q[205], Q[205], remCap[205];
 map<pair<int, int>, int> s_value; // saving_value
 vector<pair<int, int>> needtotake;
 vector<savings> save;
@@ -181,9 +180,10 @@ void printInitConfig() {
 //* passengers to their delivery point <=> i + N + M
 //* parcels to their delivery point <=> i + N + M
 
-// ! ****************************2OPT**************************************** ! //
+// ! *********************************************************************** ! //
 
 vector<int> newRoute;
+bool checking[5005];
 
 int cal_distance(vector<int> route) {
     int s = 0;
@@ -193,27 +193,89 @@ int cal_distance(vector<int> route) {
     return s;
 }
 
-vector<int> opt_swap(vector<int> route, int i, int j) {
+/*vector<int> opt_swap(vector<int> route, int i, int j) {
     vector<int> nRoute(route.begin(), route.begin() + i);
     for(int k = j; k >= i + 1; k--) nRoute.push_back(route[i]);
     for(int k = j + 1; k < route.size(); k++) nRoute.push_back(route[i]);
+    bool ok = false;
+    for(int k = 0; k < route.size(); k++) {
+        cerr << route[k] << ' ';
+    }
+    cerr << '\n';
     return nRoute;
+}*/
+
+vector<int> opt_swap(vector<int> path, int i, int j) {
+    vector<int> route = path;
+	reverse(begin(route) + i + 1, begin(route) + j + 1);
+    bool ok = false;
+    return route;
 }
 
-void two_opt_operation() {
-    for(int k = 0; k < K; k++) {
-        // 2-opt in each route
-        for(int i = 1; i < initRoutes[k].size() - 2; i++) {
-            for(int j = i + 1; j < initRoutes[k].size() - 1; j++) {
-                newRoute = opt_swap(initRoutes[k], i, j);
-                int new_dist = cal_distance(initRoutes[k]);
+bool check_valid(vector<int> route) {
+    memset(checking, false, sizeof(checking));
+    bool final_check = true;
+    for(int i = 1; i < route.size() - 1; i++) {
+        if(route[i] <= N + M) checking[route[i]] = true;
+        else { 
+            if(checking[route[i] - N - M] == true && (route[i] - N - M) <= N && (route[i] - N - M) == route[i - 1]) checking[route[i]] = true;
+            else if(checking[route[i] - N - M] == true && (route[i] - N - M) > N && (route[i] - N - M) <= (N + M)) checking[route[i]] = true;
+        }        
+    }
+    for(int i = 1; i < route.size() - 1; i++)
+        if(checking[route[i]] == false) {
+            final_check = false;
+            break;
+        }
+    return final_check;
+}
+
+vector<vector<int>> consider;
+
+vector<int> two_opt_for_each(vector<int> &given_route, int k) {
+    vector<int> route = given_route, original_route = route;
+    int cur_sum = sumRoutes[k], cur_min_sum = sumRoutes[k]; 
+    bool improving = true;
+    consider.clear();
+    while(improving) {
+        consider.clear();
+        consider.push_back(route);
+        improving = false;
+        for(int i = 0; i < route.size() - 2; i++) {
+            for(int j = i + 1; j < route.size() - 1; j++) {
+                newRoute = opt_swap(route, i, j);
+                int new_dist = cal_distance(newRoute);
                 
-                if(new_dist < sumRoutes[k]) {
-                    sumRoutes[k] = new_dist;
-                    initRoutes[k] = newRoute;
+                if(new_dist < cur_sum) {
+                    cur_sum = new_dist;
+                    route = newRoute;
+                    consider.push_back(newRoute);
+                    improving = true;
                 }
             }
         }
+        for(auto c:consider) {
+            bool ok = check_valid(c);
+            if(!ok) continue;
+            int sum = cal_distance(c);
+            if(sum < cur_min_sum) {
+                cur_min_sum = sum;
+                original_route = c;
+                            
+            }
+        }
+    }
+    return original_route;
+}
+
+void two_opt_operation() {
+    vector<int> original_config;
+    for(int k = 0; k < K; k++) {
+        // 2-opt in each route
+        vector<int> temp = two_opt_for_each(initRoutes[k], k);
+        cout << temp.size() << '\n';
+        for(auto i:temp) cout << i << ' ';
+        cout << '\n';
     }
 }
 
@@ -231,12 +293,7 @@ void printAfter2Opt() {
         cout << "Routes " << k << " = " << sumRoutes[k] << "\n";
     }
 }
-// ! **************************REMINDER************************************* ! //
 
-//* the index for car's capacity is in range (0, K - 1)
-//* the index for weigh of parcels is in range(1, M)
-
-// ! *********************************************************************** ! //
 
 void Enter() {
     cin >> N >> M >> K;
@@ -256,14 +313,16 @@ void Enter() {
 void solve() {
     initConfig();
     //printInitConfig();
+    cout << K << "\n";
     two_opt_operation();
     //printAfter2Opt();
-    cout << K << "\n";
+    /*
+    cout << K << '\n';
     for(int k = 0; k < K; k++) {
         cout << initRoutes[k].size() << "\n";
-        for(auto i:initRoutes[k]) cout << i << " ";
+        for(auto i:initRoutes[k]) cout << i << ' ';
         cout << '\n';
-    }
+    }*/
 }
 
 int32_t main() {

@@ -3,6 +3,7 @@
 // ! *********************************************************************** ! //
 
 vector<int> newRoute;
+bool checking[5005];
 
 int cal_distance(vector<int> route) {
     int s = 0;
@@ -24,51 +25,77 @@ int cal_distance(vector<int> route) {
     return nRoute;
 }*/
 
-pair<vector<int>, bool> opt_swap(vector<int> path, int i, int j) {
+vector<int> opt_swap(vector<int> path, int i, int j) {
     vector<int> route = path;
 	reverse(begin(route) + i + 1, begin(route) + j + 1);
     bool ok = false;
+    return route;
+}
+
+bool check_valid(vector<int> route) {
+    memset(checking, false, sizeof(checking));
+    bool final_check = true;
     for(int i = 1; i < route.size() - 1; i++) {
-        if(route[i] >= 1 && route[i] <= N && route[i + 1] == route[i] + N + M) ok = true;
-        else ok = false;
+        if(route[i] <= N + M) checking[route[i]] = true;
+        else { 
+            if(checking[route[i] - N - M] == true && (route[i] - N - M) <= N && (route[i] - N - M) == route[i - 1]) checking[route[i]] = true;
+            else if(checking[route[i] - N - M] == true && (route[i] - N - M) > N && (route[i] - N - M) <= (N + M)) checking[route[i]] = true;
+        }        
     }
-    return {route, ok};
+    for(int i = 1; i < route.size() - 1; i++)
+        if(checking[route[i]] == false) {
+            final_check = false;
+            break;
+        }
+    return final_check;
+}
+
+vector<vector<int>> consider;
+
+vector<int> two_opt_for_each(vector<int> &given_route, int k) {
+    vector<int> route = given_route, original_route = route;
+    int cur_sum = sumRoutes[k], cur_min_sum = sumRoutes[k]; 
+    bool improving = true;
+    consider.clear();
+    while(improving) {
+        consider.clear();
+        consider.push_back(route);
+        improving = false;
+        for(int i = 0; i < route.size() - 2; i++) {
+            for(int j = i + 1; j < route.size() - 1; j++) {
+                newRoute = opt_swap(route, i, j);
+                int new_dist = cal_distance(newRoute);
+                
+                if(new_dist < cur_sum) {
+                    cur_sum = new_dist;
+                    route = newRoute;
+                    consider.push_back(newRoute);
+                    improving = true;
+                }
+            }
+        }
+        for(auto c:consider) {
+            bool ok = check_valid(c);
+            if(!ok) continue;
+            int sum = cal_distance(c);
+            if(sum < cur_min_sum) {
+                cur_min_sum = sum;
+                original_route = c;
+                            
+            }
+        }
+    }
+    return original_route;
 }
 
 void two_opt_operation() {
-    cout << "I am running in opt\n";
     vector<int> original_config;
     for(int k = 0; k < K; k++) {
         // 2-opt in each route
-        original_config.clear();
-        k = 1;
-        original_config = initRoutes[k];
-        bool improvement = true;
-        while(improvement) {
-            cerr << improvement << '\n';
-            improvement = false;
-            for(int i = 1; i < initRoutes[k].size() - 2; i++) {
-                for(int j = i + 1; j < initRoutes[k].size() - 1; j++) {
-                    pair<vector<int>, bool> tmp = opt_swap(initRoutes[k], i, j);
-                    newRoute = tmp.first;
-                    bool ok = tmp.second;
-                    int new_dist = cal_distance(newRoute);
-                    
-                    if(new_dist < sumRoutes[k]) {
-                        if(ok) {
-                            sumRoutes[k] = new_dist;
-                            initRoutes[k] = newRoute;
-                            // TODO: check for the 2opt
-                            for(auto i:newRoute) cerr << i << ' ';
-                            cerr << ": " << new_dist << '\n';
-                        }
-                        improvement = true;
-                    }
-                }
-            }
-            if(initRoutes[k] == original_config) break;
-        }
-        return;
+        vector<int> temp = two_opt_for_each(initRoutes[k], k);
+        cout << temp.size() << '\n';
+        for(auto i:temp) cout << i << ' ';
+        cout << '\n';
     }
 }
 
