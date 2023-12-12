@@ -29,15 +29,16 @@ void Enter() {
 
 void solve() {
     initConfig();
-    //printInitConfig();
+    printInitConfig();
     two_opt_operation();
     //printAfter2Opt();
+    /*
     cout << K << '\n';
     for(int k = 0; k < K; k++) {
         cout << initRoutes[k].size() << "\n";
         for(auto i:initRoutes[k]) cout << i << ' ';
         cout << '\n';
-    }
+    }*/
 }
 
 int32_t main() {
