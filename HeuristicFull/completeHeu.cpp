@@ -19,12 +19,12 @@ struct savings {
     int saving, i, j;
 };
 int K, N, M;
-int d[1005][1005], initDeliver[2005], sumRoutes[2005];
-int q[205], Q[205], remCap[205];
+int d[5005][5005], initDeliver[5005], sumRoutes[5005];
+int q[5005], Q[5005], remCap[5005];
 map<pair<int, int>, int> s_value; // saving_value
 vector<pair<int, int>> needtotake;
 vector<savings> save;
-vector<int> initRoutes[105], routes[105];
+vector<int> initRoutes[500], routes[500];
 vector<int> considering;
 
 // ! *********************************************************************** ! //
