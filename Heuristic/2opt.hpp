@@ -58,6 +58,8 @@ vector<int> two_opt_for_each(vector<int> &given_route, int k) {
     bool improving = true;
     consider.clear();
     while(improving) {
+        //for(auto i:route) cerr << i << ' ';
+        //cerr << ": " << cal_distance(route) << '\n';
         consider.clear();
         consider.push_back(route);
         improving = false;
@@ -75,30 +77,34 @@ vector<int> two_opt_for_each(vector<int> &given_route, int k) {
             }
         }
         for(auto c:consider) {
-            //for(auto i:c) cerr << i << ' ';
-            //cerr << '\n';
             bool ok = check_valid(c);
             if(!ok) continue;
             int sum = cal_distance(c);
             if(sum < cur_min_sum) {
                 cur_min_sum = sum;
                 original_route = c;
+                
             }
         }
-        // ? some problem occur leads to infinite loop, eventhough it reaches stop point?
+        if(original_route == route) break;
+        else {
+            route = original_route;
+            improving = true;
+        }
     }
     return original_route;
 }
-
 void two_opt_operation() {
     vector<int> original_config;
     for(int k = 0; k < K; k++) {
         // 2-opt in each route
-        k = 0;
+       // k = 1;
         vector<int> temp = two_opt_for_each(initRoutes[k], k);
         cout << temp.size() << '\n';
         for(auto i:temp) cout << i << ' ';
+        //cout << ": " << cal_distance(temp) << "\n";
         cout << '\n';
+        //return;
     }
 }
 

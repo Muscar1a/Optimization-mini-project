@@ -29,8 +29,7 @@ void Enter() {
 
 void solve() {
     initConfig();
-    printInitConfig();
-    cout << K << "\n";
+    //printInitConfig();
     two_opt_operation();
     //printAfter2Opt();
     /*

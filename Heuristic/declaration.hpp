@@ -55,6 +55,14 @@ void init() {
     for(int i = 0; i < K; i++) initRoutes[i].push_back(0);
 }
 
+void initConfig() {
+    for(int i = 0; i < needtotake.size(); i++) {
+        int index = Rand(0, K - 1);
+        initRoutes[index].push_back(needtotake[i].second);
+    } 
+}
+
+/*
 pair<pair<int, int>, int> try_to_return_thing(int from, int to, int k, int* currentCapacity) {
     considering.clear();
     int* Cap = currentCapacity;
@@ -170,7 +178,7 @@ void printInitConfig() {
         cout << "Routes " << k << " = " << sumRoutes[k] << "\n";
     }
 }
-
+*/
 
 
 // ! **************************REMINDER************************************* ! //
