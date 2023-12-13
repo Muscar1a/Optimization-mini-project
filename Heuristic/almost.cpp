@@ -1,7 +1,7 @@
 //Mus
 //#define _CRT_NONSTDC_NO_WaRNINGS
 #include <bits/stdc++.h>
-#include "2opt.hpp"
+#include "GA.hpp"
 using namespace std;
 
 
@@ -28,10 +28,11 @@ void Enter() {
 }
 
 void solve() {
-    initConfig();
-    printInitConfig();
-    two_opt_operation();
-    printAfter2Opt();
+    createInitSol();
+    // initConfig();
+    // printInitConfig();
+    // two_opt_operation();
+    // printAfter2Opt();
 }
 
 int32_t main() {
@@ -48,7 +49,7 @@ int32_t main() {
     solve();
     
     time(&end);
-    //cout << "Time taken: " << fixed << setprecision(5) << (end - start) << " sec";
+    //cerr << "Time taken: " << fixed << setprecision(5) << double(end - start) << " sec";
 	return 0;
 }
 
