@@ -27,6 +27,15 @@ vector<savings> save;
 vector<int> initRoutes[105], routes[105];
 vector<int> considering;
 
+struct population {
+    int biggest; // biggest route for each configuration
+    vector<int> temp[205];
+    vector<int> routes[205];
+    int fitness[205];
+    bool isUseThisPop;
+};
+population pop[25];
+
 // ! *********************************************************************** ! //
 
 bool cmp(savings a, savings b) {
@@ -52,11 +61,11 @@ void init() {
     }
     sort(save.begin(), save.end(), cmp);
 
-    for(int i = 0; i < K; i++) initRoutes[i].push_back(0);
+    /*
     for(int i = 0; i < needtotake.size(); i++) {
         int index = Rand(0, K - 1);
         initRoutes[index].push_back(needtotake[i].second);
-    } 
+    } */
 }
 
 

@@ -28,11 +28,8 @@ void Enter() {
 }
 
 void solve() {
-    createInitSol();
-    // initConfig();
-    // printInitConfig();
-    // two_opt_operation();
-    // printAfter2Opt();
+    createPopulation();
+    selection();
 }
 
 int32_t main() {
@@ -49,7 +46,7 @@ int32_t main() {
     solve();
     
     time(&end);
-    //cerr << "Time taken: " << fixed << setprecision(5) << double(end - start) << " sec";
+    cerr << "Time taken: " << fixed << setprecision(5) << double(end - start) << " sec";
 	return 0;
 }
 

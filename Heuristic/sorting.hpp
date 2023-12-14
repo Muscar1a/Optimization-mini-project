@@ -22,8 +22,8 @@ void merge(population array[], int const left, int const mid, int const right) {
     // Merge the temp arrays back into array[left..right]
     while (indexOfSubArrayOne < subArrayOne
            && indexOfSubArrayTwo < subArrayTwo) {
-        if (leftArray[indexOfSubArrayOne].biggest >= rightArray[indexOfSubArrayTwo].biggest) {
-            //* sort in descending order
+        if (leftArray[indexOfSubArrayOne].biggest <= rightArray[indexOfSubArrayTwo].biggest) {
+            //* sort in ascending order
             array[indexOfMergedArray] = leftArray[indexOfSubArrayOne];
             indexOfSubArrayOne++;
         }
