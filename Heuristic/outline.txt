@@ -1,0 +1,18 @@
+1. Representation of VRP solution for genetic algorithm
+- Form all routes as a permutation with (k + 1) number 0
+2. Selection
+- Reproduce the population 
+    + Roulette wheel selection (RWS) 
+    + Elitism selection (ES)
+    + Rank selection (RS)
+    + Stochastic universal sampling selection (SUSS) 
+    + Tournament selection (TS)
+3. Crossover Operators
+- To avoid the duplicate delivery point, we may use 
+    + Order crossover
+    + Partially mapped crossover
+    + Edge recombination crossover
+    + Cycle crossover
+4. Mutation operation
+
+file:///C:/Users/ROG/Downloads/electronics-10-03147.pdf

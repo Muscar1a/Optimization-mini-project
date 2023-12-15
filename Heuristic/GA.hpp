@@ -1,4 +1,15 @@
-#include "sorting.hpp"
+#include "declaration.hpp"
+
+// ! *********************************************************************** ! //
+
+/*
+1. Initial population
+2. Evaluation fitness -> remove weakness individual
+3. Selection
+4. Crossover
+5. Mutation
+
+*/
 
 // ! *********************************************************************** ! //
 
@@ -13,57 +24,21 @@ int eval_fitness(vector<int> route) {
     return sum;
 }
 
-void createEachRoute(vector<int> given) {
-    // reset the delivery array
-    for(int i = 1; i <= N + M; i++) delivery[i] = false;
-    vector<int> route;
-    route.push_back(0);
-    for(int i = 0; i < given.size(); i++) {
-        if(given[i] <= N) {
-            route.push_back(given[i]);
-            route.push_back(given[i] + N + M);
-        } else if(given[i] <= N + M && given[i] > N) 
-            route.push_back(given[i]);
-        
-    }
-    // TODO: generate the initial complete route
-}
 
 void createPopulation() {
-    cerr << "Creating population\n";
+    vector<int> t;
+    for(int i = 1; i <= K; i++)
+        t.push_back(0);
+    for(int i = 1; i <= N + M; i++) 
+        t.push_back(i);
+    t.push_back(0);
     for(int p = 1; p <= 20; p++) {
-        cerr << "Population " << p << '\n';
-        for(int i = 1; i <= N + M; i++) {
-            int index = Rand(0, K - 1);
-            pop[p].temp[index].push_back(i);
-            pop[p].temp[index].push_back(i);
-        }
-        for(int i = 0; i < K; i++)
-            pop[p].temp[i].push_back(0);
-        for(int k = 0; k < K; k++) {
-            for(auto i:pop[p].temp[k]) {
-                pop[p].routes[k].push_back(i);
-                pop[p].routes[k].push_back(i + N + M);
-            }
-            pop[p].biggest = INT_MIN;
-            int sum = eval_fitness(pop[p].routes[k]);
-            pop[p].fitness[k] = sum;
-            pop[p].isUseThisPop = true;
-            pop[p].biggest = max(pop[p].biggest, sum);
-        }
+        random_shuffle(t.begin() + 1, t.end() - 1);
+        pop[p].route = t;
     }
-    
-}
-
-
-void selection() {
-    mergeSort(pop, 1, size_pop);
-    for(int i = size_pop / 2 + 1; i <= size_pop; i++) {
-        pop[i].isUseThisPop = false;
+    for(int p = 1; p <= 10; p++) {
+        cerr << p << '\n';
+        for(auto i:pop[p].route) cerr << i << ' ';
+        cerr << '\n';
     }
-    size_pop /= 2;
-}
-
-void crossover(population par1, population par2) {
-    
 }

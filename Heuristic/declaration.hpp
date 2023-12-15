@@ -28,13 +28,10 @@ vector<int> initRoutes[105], routes[105];
 vector<int> considering;
 
 struct population {
-    int biggest; // biggest route for each configuration
-    vector<int> temp[205];
-    vector<int> routes[205];
-    int fitness[205];
-    bool isUseThisPop;
+    vector<int> route;
+    int fitness;
 };
-population pop[25];
+population pop[2005];
 
 // ! *********************************************************************** ! //
 

@@ -29,7 +29,6 @@ void Enter() {
 
 void solve() {
     createPopulation();
-    selection();
 }
 
 int32_t main() {
