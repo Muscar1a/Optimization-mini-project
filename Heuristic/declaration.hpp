@@ -12,7 +12,7 @@ typedef long double ld;
 #define MOD (ll)(1e9 + 7)
 const int maxn = 1e5 + 10, inf = 0x3f3f3f3f;
 #define taskname "almost"
-
+#define pii             pair<int, int>
 // ! *************************DECLARATION********************************** ! //
 
 struct savings {

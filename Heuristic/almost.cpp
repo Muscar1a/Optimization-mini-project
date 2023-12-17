@@ -33,13 +33,13 @@ void solve() {
 
 int32_t main() {
     time_t start, end;
-    time(&start);
     srand(time(NULL));
     tachyon;
     if(ifstream(taskname".inp")) {
         freopen(taskname".inp", "r", stdin);
         freopen(taskname".out", "w", stdout);
     }
+    time(&start);
     Enter();
     init();
     solve();
