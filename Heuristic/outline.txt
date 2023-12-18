@@ -14,5 +14,3 @@
     + Edge recombination crossover
     + Cycle crossover
 4. Mutation operation
-
-file:///C:/Users/ROG/Downloads/electronics-10-03147.pdf

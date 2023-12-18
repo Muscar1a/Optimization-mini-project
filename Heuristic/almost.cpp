@@ -3,12 +3,13 @@
 #include <bits/stdc++.h>
 #include "GA.hpp"
 using namespace std;
+using namespace std::chrono;
 
 
 // ! **************************REMINDER************************************* ! //
 
 //* the index for car's capacity is in range (0, K - 1)
-//* the index for weigh of parcels is in range(1, M)
+//* the index for weigh of parcels is in rannge(1, M)
 
 // ! *********************************************************************** ! //
 
@@ -29,23 +30,26 @@ void Enter() {
 
 void solve() {
     createPopulation();
+    
 }
 
 int32_t main() {
-    time_t start, end;
-    srand(time(NULL));
+    
     tachyon;
     if(ifstream(taskname".inp")) {
         freopen(taskname".inp", "r", stdin);
         freopen(taskname".out", "w", stdout);
     }
-    time(&start);
+    srand(static_cast<unsigned>(std::time(0)));
+    auto start = high_resolution_clock::now();
     Enter();
     init();
     solve();
     
-    time(&end);
-    cerr << "Time taken: " << fixed << setprecision(5) << double(end - start) << " sec";
+    auto stop = high_resolution_clock::now();
+    
+    auto duration = duration_cast<milliseconds>(stop - start);
+    cerr << fixed << setprecision(5) << (double)duration.count() / 1000 << '\n';
 	return 0;
 }
 

@@ -1,4 +1,4 @@
-#include "declaration.hpp"
+#include "tabusearch.hpp"
 
 // ! *********************************************************************** ! //
 
@@ -13,6 +13,7 @@
 
 // ! *********************************************************************** ! //
 
+const int SIZEofPopulation = 1000;
 const int max_iter = 1000;
 
 int delivery[1005], size_pop = 20;
@@ -49,6 +50,11 @@ void eval_fitness(vector<int> origin_config) {
     // Calculate lenght for each route in a config
 }
 
+void tournament(vector<population> pop) {
+    vector<population> selectPars;
+    
+}
+
 void createPopulation() {
     vector<int> t;
     for(int i = 1; i <= K; i++)
@@ -56,7 +62,7 @@ void createPopulation() {
     for(int i = 1; i <= N + M; i++) 
         t.push_back(i);
     t.push_back(0);
-    for(int p = 1; p <= 20; p++) {
+    for(int p = 1; p <= SIZEofPopulation; p++) {
         random_shuffle(t.begin() + 1, t.end() - 1);
         bool ok = true;
         while(1) {
@@ -67,7 +73,15 @@ void createPopulation() {
             if(ok == true) break;
             else random_shuffle(t.begin() + 1, t.end() - 1);
         }
-        pop[p].route = t;
-        //* route: pop[p].route
+        pop.push_back({t, 0});
     }
+    /*
+    for(int i = 0; i < pop.size(); i++) {
+        cout << "Route " << i + 1 << ": ";
+        for(int j = 0; j < pop[i].route.size(); j++) {
+            cout << pop[i].route[j] << ' ';
+        }
+        cout << '\n';
+    }
+    */
 }
