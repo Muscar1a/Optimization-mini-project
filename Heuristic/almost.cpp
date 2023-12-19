@@ -28,9 +28,27 @@ void Enter() {
     }
 }
 
+void testing() {
+    cout << cal_distance({{0, -1}, {1, 7}, {0, -1} }) << '\n';
+    vector<pii> temp = tabu_search({{0, -1}, {1, 7}, {0, -1} });
+    for(auto i:temp) {
+        if(i.first >= 1 && i.first <= N) cout << i.first << ' ' << i.second << ' ';
+        else cout << i.first << ' ';
+    }
+    cout << '\n' << cal_distance(temp) << '\n';
+}
+
 void solve() {
     createPopulation();
-    
+    /*
+    vector<population> new_pop = next_generation(pop, tournament_size, mutation_rate, crossover_rate);
+    int cnt = 0;
+    for(auto p:new_pop) {
+        cout << ++cnt << " - " << p.biggest_fitness_among_routes << ":\n";
+        for(auto i:p.route) cout << i << ' ';
+        cout << '\n';
+    }
+    */
 }
 
 int32_t main() {
@@ -44,6 +62,7 @@ int32_t main() {
     auto start = high_resolution_clock::now();
     Enter();
     init();
+    // testing();
     solve();
     
     auto stop = high_resolution_clock::now();
