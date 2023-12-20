@@ -126,13 +126,14 @@ void createPopulation() {
         pop[x].biggest_fitness_among_routes = biggest_fitness;
         // cout << pop[x].biggest_fitness_among_routes << '\n';
     }
-    
+    /*
     for(int p = 0; p < SIZEofPopulation; p++) {
         cout << "p = " << p + 1 << " - " << pop[p].biggest_fitness_among_routes << ":\n";
         for(auto i:pop[p].route) cout << i << ' ';
-        cout << '\n';
+        cout << " - " << pop[p].biggest_fitness_among_routes << '\n';
     
     }
+    */
 }
 
 //? need to check
@@ -160,24 +161,44 @@ population tournament(vector<population> pop, int tournament_size) {
     return select;    
 }
 
-//TODO: finish the crossover(can use OX1) and mutatation step
-vector<int> making_children(vector<int> par1, vector<int> par2) {
+pair<vector<int>, vector<int>> making_children(vector<int> par1, vector<int> par2) {
     int sz = par1.size();
     int point1 = sz / 3;
     int point2 = sz / 3  + point1 - 1;
-    bool ok1[2005], ok2[2005], nz0 = 0, nz1 = 0;
-    // nz must < k - 1
+    int ok1[2005], ok2[2005];
+    // ok1 and ok2 are counting arrays, notice that ok1[0] and ok2[0] must <= K - 1
     vector<int> child1 = par1, child2 = par2;
     for(int i = point1; i <= point2; i++) {
-        ok1[child1[i]] = true;
-        ok2[child2[i]] = true;
+        ok1[child1[i]]++;
+        ok2[child2[i]]++;
     }
+    int cnt1 = 1, cnt2 = 1;
     for(int i = 1; i < sz - 1; i++) {
-        
+        if(cnt1 == point1) cnt1 = point2 + 1;
+        if(cnt2 == point1) cnt2 = point2 + 1;
+        if(ok1[par2[i]] == 0) {
+            child1[cnt1] = par2[i];
+            ok1[par2[i]]++;
+            cnt1++;
+        } else if(par2[i] == 0 && ok1[par2[i]] < K - 2) {
+            child1[cnt1] = par2[i];
+            ok1[par2[i]]++;
+            cnt1++;
+        }
+        if(ok2[par1[i]] == 0) {
+            child2[cnt2] = par1[i];
+            ok2[par1[i]]++; 
+            cnt2++;
+        } else if(par1[i] == 0 && ok2[par1[i]] < K - 2) {
+            child2[cnt2] = par1[i];
+            ok2[par1[i]]++;
+            cnt2++;   
+        }
     }
+    return {child1, child2};
 }
 
-void crossover(vector<population> parents, double crossover_rate) {
+vector<population> crossover(vector<population> parents, double crossover_rate) {
     vector<population> offspring, par = parents;
     vector<int> parent_index(parents.size());
     iota(parent_index.begin(), parent_index.end(), 0);
@@ -203,13 +224,12 @@ void crossover(vector<population> parents, double crossover_rate) {
             offspring.push_back({par_0, 0});
             offspring.push_back({par_1, 0});
         } else {
-            
-
-            //* the number of 0 each child must have is k - 1
-            
+            pair<vector<int>, vector<int>> children = making_children(par_0, par_1); 
+            offspring.push_back({children.first, 0});
+            offspring.push_back({children.second, 0});
         }
     }
-    
+    return offspring;
 }
 
 vector<population> next_generation(vector<population> pop, int tournament_size, double mutation_rate, double crossover_rate) {

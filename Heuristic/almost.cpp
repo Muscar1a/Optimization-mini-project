@@ -29,17 +29,14 @@ void Enter() {
 }
 
 void testing() {
-    cout << cal_distance({{0, -1}, {1, 7}, {0, -1} }) << '\n';
-    vector<pii> temp = tabu_search({{0, -1}, {1, 7}, {0, -1} });
-    for(auto i:temp) {
-        if(i.first >= 1 && i.first <= N) cout << i.first << ' ' << i.second << ' ';
-        else cout << i.first << ' ';
-    }
-    cout << '\n' << cal_distance(temp) << '\n';
-}
-
-void solve() {
-    createPopulation();
+    //createPopulation();
+    pair<vector<int>, vector<int>> child_making = making_children({0, 2, 6, 3, 0, 5, 4, 1, 0}, {0, 1, 0, 6, 5, 2, 3, 4, 0});
+    vector<int> child1, child2;
+    child1 = child_making.first;
+    child2 = child_making.second;
+    for(auto i:child1) cout << i << ' ';
+    cout << '\n';
+    for(auto i:child2) cout << i << ' ';
     /*
     vector<population> new_pop = next_generation(pop, tournament_size, mutation_rate, crossover_rate);
     int cnt = 0;
@@ -51,6 +48,12 @@ void solve() {
     */
 }
 
+void solve() {
+    createPopulation();
+    
+}
+// already finish the crossover
+// TODO: write the main function and mutate
 int32_t main() {
     
     tachyon;
