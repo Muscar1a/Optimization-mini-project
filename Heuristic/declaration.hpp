@@ -22,6 +22,8 @@ struct savings {
 int K, N, M;
 int d[1005][1005], initDeliver[2005], sumRoutes[2005];
 int q[205], Q[205], remCap[205];
+
+
 map<pair<int, int>, int> s_value; // saving_value
 vector<pair<int, int>> needtotake;
 vector<savings> save;

@@ -16,11 +16,10 @@
 
 // ! *********************************************************************** ! //
 
-const int SIZEofPopulation = 1000;
-const int max_iter = 1000;
-const int tournament_size = 5;
+const int SIZEofPopulation = 20;
+const int tournament_size = 4;
 const double mutation_rate = 0.2;
-const double crossover_rate = 1.0;
+const double crossover_rate = 0.5;
 
 int delivery[1005], size_pop = 20;
 
@@ -91,7 +90,7 @@ void createPopulation() {
 
     //* original size of 'pop' = 1000
     // temp to create a full route, but just trying
-    for(int x = 0; x < 5; x++) {
+    for(int x = 0; x < SIZEofPopulation; x++) {
         /* 
         cout << "Route " << x + 1 << ": ";
         for(int i = 0; i < pop[x].route.size(); i++) cout << pop[x].route[i] << ' ';
@@ -127,7 +126,13 @@ void createPopulation() {
         pop[x].biggest_fitness_among_routes = biggest_fitness;
         // cout << pop[x].biggest_fitness_among_routes << '\n';
     }
-
+    
+    for(int p = 0; p < SIZEofPopulation; p++) {
+        cout << "p = " << p + 1 << " - " << pop[p].biggest_fitness_among_routes << ":\n";
+        for(auto i:pop[p].route) cout << i << ' ';
+        cout << '\n';
+    
+    }
 }
 
 //? need to check
@@ -156,10 +161,54 @@ population tournament(vector<population> pop, int tournament_size) {
 }
 
 //TODO: finish the crossover(can use OX1) and mutatation step
+vector<int> making_children(vector<int> par1, vector<int> par2) {
+    int sz = par1.size();
+    int point1 = sz / 3;
+    int point2 = sz / 3  + point1 - 1;
+    bool ok1[2005], ok2[2005], nz0 = 0, nz1 = 0;
+    // nz must < k - 1
+    vector<int> child1 = par1, child2 = par2;
+    for(int i = point1; i <= point2; i++) {
+        ok1[child1[i]] = true;
+        ok2[child2[i]] = true;
+    }
+    for(int i = 1; i < sz - 1; i++) {
+        
+    }
+}
 
 void crossover(vector<population> parents, double crossover_rate) {
     vector<population> offspring, par = parents;
+    vector<int> parent_index(parents.size());
+    iota(parent_index.begin(), parent_index.end(), 0);
 
+    while(true) {
+        if(parent_index.size() == 0) break;
+        if(parents.size() == 1) {
+            offspring.push_back(par[parent_index[0]]);
+            break;
+        }
+        int par_index_0 = Rand(0, parent_index.size() - 1);
+        int par_index_1 = Rand(0, parent_index.size() - 1);
+        
+        if(par_index_0 > par_index_1) swap(par_index_0, par_index_1);
+        parent_index.erase(parent_index.begin() + par_index_1);
+        parent_index.erase(parent_index.begin() + par_index_0);
+        
+        vector<int> par_0 = par[par_index_0].route, par_1 = par[par_index_1].route;
+        //vector<int> child_0 = par_0, child_1 = par_1;
+
+        double r = double(Rand(0, 100)) * 1.0 / 100.0;
+        if(r < crossover_rate) {
+            offspring.push_back({par_0, 0});
+            offspring.push_back({par_1, 0});
+        } else {
+            
+
+            //* the number of 0 each child must have is k - 1
+            
+        }
+    }
     
 }
 
