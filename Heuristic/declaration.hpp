@@ -36,6 +36,7 @@ struct population {
 };
 
 vector<population> pop;
+population ans;
 
 // ! *********************************************************************** ! //
 

@@ -50,9 +50,30 @@ void testing() {
 
 void solve() {
     createPopulation();
+   // population parameter = pop
+    for(int generation = 0; generation < 5; generation++) {
+        pop = next_generation(pop, tournament_size, mutation_rate, crossover_rate);
+        ans = evaluate(pop);
+    //    cerr << "Generation = " << generation << '\n';
+    }
+    vector<vector<pii>> final_ans = create_full_route(ans.route);
     
+    cout << K << "\n";
+    for(int i = 0; i < K; i++) {
+        vector<pii> temp = tabu_search(final_ans[i]);
+        vector<int> meo;
+        for(int i = 0; i < temp.size(); i++) {
+            if(temp[i].first >= 1 && temp[i].first <= N) {
+                meo.push_back(temp[i].first);
+                meo.push_back(temp[i].second);
+            } else meo.push_back(temp[i].first);
+        }
+        cout << meo.size() << '\n';
+        for(auto x:meo) cout << x << ' ';
+        cout << '\n';
+    }
 }
-// already finish the crossover
+
 // TODO: write the main function and mutate
 int32_t main() {
     
@@ -71,7 +92,7 @@ int32_t main() {
     auto stop = high_resolution_clock::now();
     
     auto duration = duration_cast<milliseconds>(stop - start);
-    cerr << fixed << setprecision(5) << (double)duration.count() / 1000 << '\n';
+    //! cerr << fixed << setprecision(5) << (double)duration.count() / 1000 << '\n';
 	return 0;
 }
 
