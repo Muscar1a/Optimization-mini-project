@@ -16,7 +16,7 @@
 
 // ! *********************************************************************** ! //
 
-const int SIZEofPopulation = 20;
+const int SIZEofPopulation = 16;
 const int tournament_size = 4;
 const double mutation_rate = 0.2;
 const double crossover_rate = 0.5;
@@ -265,7 +265,7 @@ vector<population> crossover(vector<population> parents, double crossover_rate) 
 
 //! haven't used yet
 vector<population> mutate(vector<population> chromesomes, double mutation_rate) {
-   //! cerr << "Mutation step\n";
+    cerr << "Mutation step\n";
     vector<population> mutated_chromesomes;
     for(int i = 0; i < chromesomes.size(); i++) {
         double r = double(Rand(0, 100)) * 1.0 / 100.0;
@@ -273,10 +273,15 @@ vector<population> mutate(vector<population> chromesomes, double mutation_rate) 
             // when their is a mutation occurs, we also need to calculate its biggeqst_fitness_among_routes again
             int random_index = Rand(1, chromesomes[i].route.size() - 2);
             int random_index_2 = Rand(1, chromesomes[i].route.size() - 2);
+            while(random_index == random_index_2) {
+                random_index_2 = Rand(1, chromesomes[i].route.size() - 2);
+            }
+            cerr << random_index << ' ' << random_index_2 << '\n';
             swap(chromesomes[i].route[random_index], chromesomes[i].route[random_index_2]);
-            chromesomes[i].biggest_fitness_among_routes = return_biggest_fitness_each_config(chromesomes[i].route);
+           // chromesomes[i].biggest_fitness_among_routes = return_biggest_fitness_each_config(chromesomes[i].route);
         }
     }
+    cerr << "End mutation step\n";
     return mutated_chromesomes;
 }
 
@@ -291,7 +296,8 @@ vector<population> next_generation(vector<population> pop, int tournament_size, 
    //! cerr << '\n' << "Size of the selected parents in next_gen operation: " << selected_parents.size() << '\n';
     vector<population> next_gen;
     next_gen = crossover(selected_parents, crossover_rate);
-    //next_gen = mutate(next_gen, mutation_rate);
+    cerr << next_gen.size() << '\n';
+    next_gen = mutate(next_gen, mutation_rate);
     return next_gen;
 }
 
