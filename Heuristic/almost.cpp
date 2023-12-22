@@ -48,13 +48,13 @@ void testing() {
     */
 }
 
-void solve() {
+void solving_for_GA() {
     createPopulation();
    // population parameter = pop
-    for(int generation = 0; generation < 5; generation++) {
+    for(int generation = 0; generation < 10; generation++) {
         pop = next_generation(pop, tournament_size, mutation_rate, crossover_rate);
         ans = evaluate(pop);
-    //    cerr << "Generation = " << generation << '\n';
+        cerr << "Generation = " << generation << '\n';
     }
     vector<vector<pii>> final_ans = create_full_route(ans.route);
     
@@ -87,12 +87,12 @@ int32_t main() {
     Enter();
     init();
     // testing();
-    solve();
+    solving_for_GA();
     
     auto stop = high_resolution_clock::now();
     
     auto duration = duration_cast<milliseconds>(stop - start);
-    //! cerr << fixed << setprecision(5) << (double)duration.count() / 1000 << '\n';
+    cerr << fixed << setprecision(5) << (double)duration.count() / 1000 << '\n';
 	return 0;
 }
 

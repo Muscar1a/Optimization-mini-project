@@ -211,7 +211,7 @@ int tabu_search_return_fitness(vector<pii> given) {
 // ! *********************************************************************** ! //
 
 
-const int SIZEofPopulation = 20;
+const int SIZEofPopulation = 16;
 const int tournament_size = 4;
 const double mutation_rate = 0.2;
 const double crossover_rate = 0.5;
@@ -446,6 +446,7 @@ using namespace std::chrono;
 
 void Enter() {
     cin >> N >> M >> K;
+    if(N > 10) exit(0);
     for(int i = 1; i <= M; i++) cin >> q[i];
     for(int i = 0; i < K; i++) {
         cin >> Q[i];
@@ -462,7 +463,7 @@ void Enter() {
 void solve() {
     createPopulation();
    // population parameter = pop
-    for(int generation = 0; generation < 1000; generation++) {
+    for(int generation = 0; generation < 5; generation++) {
         pop = next_generation(pop, tournament_size, mutation_rate, crossover_rate);
         ans = evaluate(pop);
     //    cerr << "Generation = " << generation << '\n';
