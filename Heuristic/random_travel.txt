@@ -1,0 +1,6 @@
+dict_schedules = random_configuration -> create an initial config
+dict_schedules contains:
+	uniform_random_config -> divide passenger randomly and create full route for each config
+matrix_dist_of_a_bus = matrix regen based on the original matrix
+num_cities = number of cities a bus has to go
+rt = random_algorithm
