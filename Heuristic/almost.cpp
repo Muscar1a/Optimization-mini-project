@@ -25,13 +25,27 @@ void Enter() {
     }
 }
 
-void solving_random_travel() {
+/* outline
+with each route, create a matrix distance for that route, then use the optimize algorithm
+*/
+
+void solving() {
     vector<vector<pair<int, int>>> schedule = random_configuration(K, N + M);
-    for(int id = 0; id < K; id++) {
-        vector<vector<int>> matrix = distance_matrix_for_each_vehicles(schedule[id]);
-        // matrix is the distance of a specific vehicle
-        
-        return;
+    for(int id = 0; id < schedule.size(); id++) {
+        vector<vector<int>> mat = generate_distance_matrix(schedule[id]);
+        int num_cities = mat.size() - 1;
+        cout << "id = " << id << '\n';
+        for(auto i:schedule[id]) {
+            if(i.first >= 1 && i.first <= N) cout << i.first << ' ' << i.second << ' ';
+            else cout << i.first << ' ';
+        }
+        cout << '\n';
+        for(int i = 1; i < mat.size(); i++) {
+            for(int j = 1; j < mat.size(); j++) {
+                cout << mat[i][j] << ' ';
+            }
+            cout << '\n';
+        }
     }
 
 }
@@ -46,7 +60,7 @@ int32_t main() {
     auto start = high_resolution_clock::now();
     Enter();
     // testing();
-    solving_random_travel();
+    solving();
     
     auto stop = high_resolution_clock::now();
     

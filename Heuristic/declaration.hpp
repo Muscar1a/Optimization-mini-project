@@ -13,6 +13,9 @@ typedef long double ld;
 const int maxn = 1e5 + 10, inf = 0x3f3f3f3f;
 #define taskname "almost"
 
+unsigned seed = static_cast<unsigned>(std::chrono::system_clock::now().time_since_epoch().count());
+random_device rd; 
+mt19937 g(seed);
 // ! *************************DECLARATION********************************** ! //
 
 struct savings {
@@ -29,58 +32,59 @@ vector<int> considering;
 
 // ! *********************************************************************** ! //
 
-
 int Rand(int L, int R) {
     return L + rand() % (R - L + 1);
 }
 
-auto random_configuration(int num_vehicles, int num_passengers_parcels) {
-    vector<int> config(num_passengers_parcels);
-    vector<pair<int, int>> temp;
-    vector<vector<pair<int, int>>> split_config;
-    random_device rd;
-    mt19937 g(rd());
+auto random_configuration(int num_vehicles, int num_pass_par) {
+    // uniform random configuration
+    vector<int> config(num_pass_par);
     iota(config.begin(), config.end(), 1);
     shuffle(config.begin(), config.end(), g);
-
-    int cnt = 0;
-    for(int i = 0; i < config.size(); i++) {
-        ++cnt;
-        if(config[i] >= 1 && config[i] <= N) temp.push_back({config[i], config[i] + N + M});
-        else temp.push_back({config[i], -1});
-        if(cnt == (num_passengers_parcels / num_vehicles)) {
-            split_config.push_back(temp);
-            temp.clear();
-            cnt = 0;
+    vector<vector<pair<int, int>>> configuration;
+    int num_per_car = num_pass_par / num_vehicles;
+    for(int i = 0; i < num_vehicles; i++) {
+        auto start = config.begin() + i * num_per_car;
+        auto end = (i == num_vehicles - 1) ? config.end() : start + num_per_car;
+        vector<pair<int, int>> single_config;
+        for(auto it = start; it != end; it++) {
+            if(*it >= 1 && *it <= N)
+                single_config.push_back({*it, *it + N + M});
+            else 
+                single_config.push_back({*it, -1});
         }
+        configuration.push_back(single_config);
     }
     for(int i = 0; i < num_vehicles; i++) {
-        temp = split_config[i];
-        for(auto j:temp) {
-            if(j.first > N) temp.push_back({j.first + N + M, -1});
+        vector<pair<int, int>> single_config = configuration[i];
+        for(auto k:configuration[i]) {
+            if(k.first > N)
+                single_config.push_back({k.first + N + M, -1});
         }
-        sort(temp.begin(), temp.end());
-        split_config[i] = temp;
-        temp.clear();
+        sort(single_config.begin(), single_config.end());
+        configuration[i] = single_config;
     }
-    return split_config;
+    return configuration;
 }
 
-vector<vector<int>> distance_matrix_for_each_vehicles(vector<pair<int, int>> passenger_list) {
-    vector<int> temp;
-    for(auto i:passenger_list) {
-        temp.push_back(i.first);
-        if(i.second != -1) temp.push_back(i.second);
+auto generate_distance_matrix(vector<pair<int, int>> list_passengers) {
+    vector<int> actual_list_passengers;
+    for(auto i:list_passengers) {
+        if(i.first >= 1 && i.first <= N) {
+            actual_list_passengers.push_back(i.first);
+            actual_list_passengers.push_back(i.second);
+        } else 
+            actual_list_passengers.push_back(i.first);
     }
-    sort(temp.begin(), temp.end());
-    int pass_size = temp.size();
-    vector<vector<int>> result_matrix(pass_size, vector<int>(pass_size));
-    for (size_t i = 0; i < pass_size; ++i) {
-        for (size_t j = 0; j < pass_size; ++j) {
-            result_matrix[i][j] = d[temp[i]][temp[j]];       
+    int n = actual_list_passengers.size();
+    vector<vector<int>> distance_matrix(n + 1, vector<int>(n + 1, 0));
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < n; j++) {
+            distance_matrix[i + 1][j + 1] = d[actual_list_passengers[i]][actual_list_passengers[j]];
         }
     }
-    return result_matrix;
+    return distance_matrix;
+    // the index of the matrix is [1..n] * [1..n]
 }
 
 // ! **************************REMINDER************************************* ! //
