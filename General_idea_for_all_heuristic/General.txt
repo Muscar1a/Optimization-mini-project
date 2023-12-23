@@ -1,0 +1,20 @@
+At first, I though that I have to optimize the results for each route, as well as the distribution of nodes for each route. But when I complete that, the algorithm tooks a lot of time to execute.
+So I came up with a simpler idea. that I will distribute the same number of passengers or parcels to each route. For example, I have passengers [1, 2, 3], and parcels [4, 5, 6] and 3 cars, I just have to random shuffle the passengers + parcels list and just divide them evenly into the cars.
+
+[1, 2, 3, 4, 5, 6] -> [4, 6, 2, 5, 3, 1]
+Now each car will have:
+Car 1: [4, 6]
+Car 2: [2, 5]
+Car 3: [3, 1]
+and then use some heuristic method to optimize the problem for each route.
+Some heuristic method can use:
+1. Greedy -> fast, but just provide acceptable solution, not optimal
+2. Branch and bound -> provide optimal solution, but slow
+3. Tabu search -> need to examize
+4. GA -> need to examize
+
+Initial idea for solving the problem
+- Generate a population of problem, then GA the config.
+- For each config, I used tabu search to find the optimal solution
+-> With exact coefficients, the solution always provide optimal solution, but it took almost a minute  to execute a 3*3 with 2 vehicles test, around 5 mins for 5*5 with 2 vehicles test -> Not an ideal waiting time for customers
+But this is still a promising idea. Should look back to this idea in the future
