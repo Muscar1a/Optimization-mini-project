@@ -1,8 +1,9 @@
 //Mus
 //#define _CRT_NONSTDC_NO_WaRNINGS
 #include <bits/stdc++.h>
-#include "2opt.hpp"
+#include "declaration.hpp"
 using namespace std;
+using namespace std::chrono;
 
 
 // ! **************************REMINDER************************************* ! //
@@ -22,41 +23,36 @@ void Enter() {
     for(int i = 0; i <= 2*N + 2*M; i++) {
         for(int j = 0; j <= 2*N + 2*M; j++) cin >> d[i][j];
     }
-    for(int i = 0; i < K; i++) {
-        routes[i].push_back(0);
-    }
 }
 
-void solve() {
-    initConfig();
-    //printInitConfig();
-    two_opt_operation();
-    //printAfter2Opt();
-    /*
-    cout << K << '\n';
-    for(int k = 0; k < K; k++) {
-        cout << initRoutes[k].size() << "\n";
-        for(auto i:initRoutes[k]) cout << i << ' ';
-        cout << '\n';
-    }*/
+void solving_random_travel() {
+    vector<vector<pair<int, int>>> schedule = random_configuration(K, N + M);
+    for(int id = 0; id < K; id++) {
+        vector<vector<int>> matrix = distance_matrix_for_each_vehicles(schedule[id]);
+        // matrix is the distance of a specific vehicle
+        
+        return;
+    }
+
 }
 
 int32_t main() {
-    time_t start, end;
-    time(&start);
-    srand(time(NULL));
     tachyon;
     if(ifstream(taskname".inp")) {
         freopen(taskname".inp", "r", stdin);
         freopen(taskname".out", "w", stdout);
     }
+    srand(static_cast<unsigned>(std::time(0)));
+    auto start = high_resolution_clock::now();
     Enter();
-    init();
-    solve();
+    // testing();
+    solving_random_travel();
     
-    time(&end);
-    //cout << "Time taken: " << fixed << setprecision(5) << (end - start) << " sec";
-	return 0;
+    auto stop = high_resolution_clock::now();
+    
+    auto duration = duration_cast<milliseconds>(stop - start);
+    cerr << fixed << setprecision(5) << (double)duration.count() / 1000 << '\n';
+    return 0;
 }
 
 /*
