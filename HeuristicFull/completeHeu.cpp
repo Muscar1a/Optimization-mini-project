@@ -11,167 +11,106 @@ typedef long double ld;
 #define all(x)          (x.begin(), x.end())
 #define MOD (ll)(1e9 + 7)
 const int maxn = 1e5 + 10, inf = 0x3f3f3f3f;
-#define taskname "almost"
-
+#define taskname "complete"
+#define pii pair<int, int>
+unsigned seed = static_cast<unsigned>(std::chrono::system_clock::now().time_since_epoch().count());
+random_device rd; 
+mt19937 g(seed);
 // ! *************************DECLARATION********************************** ! //
 
 struct savings {
     int saving, i, j;
 };
 int K, N, M;
-int d[5005][5005], initDeliver[5005], sumRoutes[5005];
-int q[5005], Q[5005], remCap[5005];
+int d[2005][2005], initDeliver[2005], sumRoutes[2005];
+int q[205], Q[205], remCap[205];
 map<pair<int, int>, int> s_value; // saving_value
 vector<pair<int, int>> needtotake;
 vector<savings> save;
-vector<int> initRoutes[500], routes[500];
+vector<int> initRoutes[105], routes[105];
 vector<int> considering;
 
 // ! *********************************************************************** ! //
-
-bool cmp(savings a, savings b) {
-    return a.saving > b.saving;
-}
 
 int Rand(int L, int R) {
     return L + rand() % (R - L + 1);
 }
 
-void init() {
-    for(int i = 1; i <= N + M; i++) {
-        needtotake.push_back({d[0][i], i});
-        initDeliver[i] = false;
-    }
-    sort(needtotake.begin(), needtotake.end());
-    for(int i = 1; i <= 2*N + 2*M; i++) {
-        for(int j = i + 1; j <= 2*N + 2*M; j++) {
-            int temp = d[0][i] + d[0][j] - d[i][j];
-            save.push_back({temp, i, j});
-            s_value[{i, j}] = s_value[{j, i}] = temp;
+auto uniform_random_configuration(int num_vehicles, int num_pass_par) {
+    // uniform random configuration
+    vector<int> config(num_pass_par);
+    iota(config.begin(), config.end(), 1);
+    shuffle(config.begin(), config.end(), g);
+    vector<vector<pair<int, int>>> configuration;
+    int num_per_car = num_pass_par / num_vehicles;
+    for(int i = 0; i < num_vehicles; i++) {
+        auto start = config.begin() + i * num_per_car;
+        auto end = (i == num_vehicles - 1) ? config.end() : start + num_per_car;
+        vector<pair<int, int>> single_config;
+        for(auto it = start; it != end; it++) {
+            if(*it >= 1 && *it <= N)
+                single_config.push_back({*it, *it + N + M});
+            else 
+                single_config.push_back({*it, -1});
         }
+        configuration.push_back(single_config);
     }
-    sort(save.begin(), save.end(), cmp);
-
-    for(int i = 0; i < K; i++) initRoutes[i].push_back(0);
+    for(int i = 0; i < num_vehicles; i++) {
+        vector<pair<int, int>> single_config = configuration[i];
+        for(auto k:configuration[i]) {
+            if(k.first > N)
+                single_config.push_back({k.first + N + M, -1});
+        }
+        //sort(single_config.begin(), single_config.end());
+        single_config.insert(single_config.begin(), {0, -1});
+        single_config.push_back({0, -1});
+        configuration[i] = single_config;
+    }
+    return configuration;
 }
 
-pair<pair<int, int>, int> try_to_return_thing(int from, int to, int k, int* currentCapacity) {
-    considering.clear();
-    int* Cap = currentCapacity;
-    for(auto p:initRoutes[k]) {
-        if(p > N && p <= N + M && !initDeliver[p]) considering.push_back(p);
-    }
-    int mn = INT_MAX, goth, ori; //goth = go through
-    //i am return only one parcel to their destination
-    for(auto g:considering) {
-        // g is parcel => g + N + M is the destination, we have to go throught this
-        int pastThis = g + N + M;
-        if(mn > d[from][pastThis] + d[pastThis][to] && (Cap[k] + q[g - N]) > q[to - N]) {
-            mn = d[from][pastThis] + d[pastThis][to];
-            ori = g;
-            goth = pastThis;
+auto random_configuration(int num_vehicles, int num_pass_par) {
+    vector<vector<pair<int, int>>> configuration(num_vehicles);
+    for(int p = 1; p <= num_pass_par; p++) {
+        int index = Rand(0, num_vehicles - 1);
+        if(p >= 1 && p <= N) {
+            configuration[index].push_back({p, p + N + M});
+        } else {
+            configuration[index].push_back({p, - 1});
+            configuration[index].push_back({p + N + M, -1});
         }
     }
-    return {{goth, ori}, mn};
+    for(int i = 0; i < num_vehicles; i++) {
+        vector<pair<int, int>> single_config = configuration[i];
+        //sort(single_config.begin(), single_config.end());
+        single_config.insert(single_config.begin(), {0, -1});
+        single_config.push_back({0, -1});
+        configuration[i] = single_config;
+    }
+    return configuration;
 }
-
-void initConfig() {
-    for(int i = 0; i < needtotake.size(); i++) {
-        int node = needtotake[i].second;    //* => currently accessing node
-        int insRoute, mn = INT_MAX;
-                
-        //* when the current reaching node is a parcel
-        if(node > N && node <= N + M) {
-            bool rtg = false; // return then go
-            int go, ori; // if have to return then go
-            //* current parcel capacity us q[node - N]
-            for(int k = 0; k < K; k++) {
-                int last = initRoutes[k].back();
-                if(remCap[k] >= q[node - N]) {
-                    if(mn > d[last][node]) {
-                        mn = d[last][node];
-                        remCap[k] -= q[node - N];
-                        insRoute = k;
-                        rtg = false;
-                    }
-                } else {
-                    int temp = INT_MAX, tempInsRoute;
-                    bool tempRtg = false;
-                    //? try to return things
-                    pair<pair<int, int>, int> gothrought = try_to_return_thing(last, node, k, remCap);
-                    int mntemp = gothrought.second;
-                    if(mn > mntemp) {
-                        mn = mntemp;
-                        insRoute = k;
-                        rtg = true;
-                        go = gothrought.first.first;
-                        ori = gothrought.first.second;
-                    }
-                }
-            }
-            // push to initRoute step
-            if(rtg) {
-                initRoutes[insRoute].push_back(go);
-                initRoutes[insRoute].push_back(node);
-                remCap[insRoute] = remCap[insRoute] + q[ori - N] - q[node - N];
-                initDeliver[ori] = true;
+int cal_distance(vector<pii> route) {
+    int sum = 0;
+    for(int i = 1; i < route.size(); i++) {
+        if(route[i].first <= N && route[i].first > 0) {
+            if(route[i - 1].first <= N && route[i - 1].first > 0) {
+                sum += d[route[i - 1].second][route[i].first];
+                sum += d[route[i].first][route[i].second];
             } else {
-                initRoutes[insRoute].push_back(node);
-                remCap[insRoute] -= q[node - N];
+                sum += d[route[i - 1].first][route[i].first];
+                sum += d[route[i].first][route[i].second];
             }
-        } else if(node >= 1 && node <= N) { //* the current node has a passenger waiting
-            int mn = INT_MAX;
-            for(int k = 0; k < K; k++) {
-                int last = initRoutes[k].back();
-                if(mn > d[last][node]) {
-                    mn = d[last][node];
-                    insRoute = k;
-                }
+        } else {
+            if(route[i - 1].first <= N && route[i - 1].first > 0) {
+                sum += d[route[i - 1].second][route[i].first];
             }
-            initRoutes[insRoute].push_back(node);
-            initRoutes[insRoute].push_back(node + N + M);
-            
+            else {
+                sum += d[route[i - 1].first][route[i].first];
+            }
         }
     }
-
-    // * fulfill the initial routes
-    for(int k = 0; k < K; k++) {
-        considering.clear();
-        for(auto p:initRoutes[k]) {
-            if(p > N && p <= N + M && !initDeliver[p]) considering.push_back(p);
-        }
-        for(auto p:considering) {
-            initDeliver[p] = true;
-            initRoutes[k] .push_back(p + N + M);
-        }
-        initRoutes[k].push_back(0);
-    }
-    for(int k = 0; k < K; k++) {
-        int sum = 0;
-        for(int i = 1; i < initRoutes[k].size(); i++) {
-            sum += d[initRoutes[k][i - 1]][initRoutes[k][i]];
-        }
-        sumRoutes[k] = sum;
-    }
+    return sum;
 }
-
-void printInitConfig() {
-    cout << "need to take\n";
-    for(auto i:needtotake) cout << i.first << " " << i.second << '\n';
-    cout << '\n';
-    cout << "Initial configuration\n";
-    for(int i = 0; i < K; i++) {
-        cout << "i = " << i << ":\n";
-        for(auto j:initRoutes[i]) cout << j << ' ';
-        cout << '\n';
-    }
-    cout << "Initial sum of each route\n";
-    for(int k = 0; k < K; k++) {
-        cout << "Routes " << k << " = " << sumRoutes[k] << "\n";
-    }
-}
-
-
 
 // ! **************************REMINDER************************************* ! //
 
@@ -182,118 +121,126 @@ void printInitConfig() {
 
 // ! *********************************************************************** ! //
 
-vector<int> newRoute;
-bool checking[5005];
+vector<pii> current_sol;
+vector<pii> best_sol;
+vector<vector<pii>> tabu_list;
 
-int cal_distance(vector<int> route) {
-    int s = 0;
-    for(int i = 1; i < route.size(); i++) {
-        s += d[route[i - 1]][route[i]];
-    }
-    return s;
-}
-
-/*vector<int> opt_swap(vector<int> route, int i, int j) {
-    vector<int> nRoute(route.begin(), route.begin() + i);
-    for(int k = j; k >= i + 1; k--) nRoute.push_back(route[i]);
-    for(int k = j + 1; k < route.size(); k++) nRoute.push_back(route[i]);
-    bool ok = false;
-    for(int k = 0; k < route.size(); k++) {
-        cerr << route[k] << ' ';
-    }
-    cerr << '\n';
-    return nRoute;
-}*/
-
-vector<int> opt_swap(vector<int> path, int i, int j) {
-    vector<int> route = path;
-	reverse(begin(route) + i + 1, begin(route) + j + 1);
-    bool ok = false;
-    return route;
-}
-
-bool check_valid(vector<int> route) {
-    memset(checking, false, sizeof(checking));
-    bool final_check = true;
+bool check_valid(vector<pii> route) {
+    // initDelivery is to check whether a passenger has been delivered or not
+    for(int i = 1; i <= 2*N + 2*M; i++) initDeliver[i] = false;
+    bool check = true;
     for(int i = 1; i < route.size() - 1; i++) {
-        if(route[i] <= N + M) checking[route[i]] = true;
-        else { 
-            if(checking[route[i] - N - M] == true && (route[i] - N - M) <= N && (route[i] - N - M) == route[i - 1]) checking[route[i]] = true;
-            else if(checking[route[i] - N - M] == true && (route[i] - N - M) > N && (route[i] - N - M) <= (N + M)) checking[route[i]] = true;
-        }        
-    }
-    for(int i = 1; i < route.size() - 1; i++)
-        if(checking[route[i]] == false) {
-            final_check = false;
-            break;
+        int nodea = route[i].first, nodeb = route[i].second;
+        if(nodea <= N && nodea > 0) initDeliver[nodea] = true, initDeliver[nodeb] = true;
+        else if(nodea > N && nodea <= N + M) {
+            if(initDeliver[nodea + N + M] == true) check = false;;
+            initDeliver[nodea] = true;
+        } else if(nodea > N + M) {
+            if(initDeliver[nodea - N - M] == false) check = false;
+            initDeliver[nodea + N + M] = true;
         }
-    return final_check;
+    }
+    /*for(int i = 1; i < route.size() - 1; i++) {
+        int nodea = route[i].first, nodeb = route[i].second;
+        if(nodea > N && nodea <= N + M) {
+            if(capacity >= q[nodea - N]) capacity -= q[nodea - N];
+            else check = false;
+        } else if(nodea > N + M) {
+            capacity += q[nodea - N - M];
+        }
+    }*/
+    return check;
 }
 
-vector<vector<int>> consider;
+bool check_valid_with_capacity(vector<pii> route, int capacity) {
+    for(int i = 1; i <= 2*N + 2*M; i++) initDeliver[i] = false;
+    bool check = true;
+    for(int i = 1; i < route.size() - 1; i++) {
+        int nodea = route[i].first, nodeb = route[i].second;
+        if(nodea <= N && nodea > 0) initDeliver[nodea] = true, initDeliver[nodeb] = true;
+        else if(nodea > N && nodea <= N + M) {
+            if(initDeliver[nodea + N + M] == true) check = false;;
+            initDeliver[nodea] = true;
+        } else if(nodea > N + M) {
+            if(initDeliver[nodea - N - M] == false) check = false;
+            initDeliver[nodea + N + M] = true;
+        }
+    }
+    for(int i = 1; i < route.size() - 1; i++) {
+        int nodea = route[i].first, nodeb = route[i].second;
+        if(nodea > N && nodea <= N + M) {
+            if(capacity >= q[nodea - N]) capacity -= q[nodea - N];
+            else check = false;
+        } else if(nodea > N + M) {
+            capacity += q[nodea - N - M];
+        }
+    }
+    return check;
+}
 
-vector<int> two_opt_for_each(vector<int> &given_route, int k) {
-    vector<int> route = given_route, original_route = route;
-    int cur_sum = sumRoutes[k], cur_min_sum = sumRoutes[k]; 
-    bool improving = true;
-    consider.clear();
-    while(improving) {
-        consider.clear();
-        consider.push_back(route);
-        improving = false;
-        for(int i = 0; i < route.size() - 2; i++) {
-            for(int j = i + 1; j < route.size() - 1; j++) {
-                newRoute = opt_swap(route, i, j);
-                int new_dist = cal_distance(newRoute);
-                
-                if(new_dist < cur_sum) {
-                    cur_sum = new_dist;
-                    route = newRoute;
-                    consider.push_back(newRoute);
-                    improving = true;
+vector<vector<pii>> get_neighbor(vector<pii> current_sol) {
+    // cerr << "Getting neighbour\n";
+    vector<vector<pii>> neighborhood;
+    for(int i = 1; i < current_sol.size() - 2; i++) {
+        for(int j = i + 1; j < current_sol.size() - 1; j++) {
+            vector<pii> neighbor = current_sol;
+            swap(neighbor[i], neighbor[j]);
+            neighborhood.push_back(neighbor);
+        }
+    }
+    // cerr << "neighborhood size = " << neighborhood.size() << '\n';
+    return neighborhood;
+}
+
+
+vector<pii> tabu_search(vector<pii> given, int capacity) {
+    current_sol.clear(), current_sol = given;
+    best_sol.clear(), best_sol = current_sol;
+    tabu_list.clear();
+    
+    if(given.size() == 3) return given;
+    if(given.size() == 4) {
+        if(given[1].first > N && given[1].first <= N + M) return given;
+    }
+    for(int iteration = 0; iteration < 1000; iteration++) {
+        vector<vector<pii>> neighbor = get_neighbor(current_sol);
+        sort(neighbor.begin(), neighbor.end(), [&](vector<pii> a, vector<pii> b) {
+            return cal_distance(a) < cal_distance(b);
+        });
+        bool found = false;
+        for(int neighbor_id = 0; neighbor_id < neighbor.size(); neighbor_id++) {
+            current_sol = neighbor[neighbor_id];
+            if(find(tabu_list.begin(), tabu_list.end(), current_sol) == tabu_list.end()) {
+                bool check = check_valid(current_sol);
+
+                if(check_valid(current_sol)) {
+                    current_sol = neighbor[neighbor_id];
+                    tabu_list.push_back(current_sol);
+                    found = true;
+                    break;
                 }
             }
         }
-        for(auto c:consider) {
-            bool ok = check_valid(c);
-            if(!ok) continue;
-            int sum = cal_distance(c);
-            if(sum < cur_min_sum) {
-                cur_min_sum = sum;
-                original_route = c;
-                            
-            }
+        if(!found) {
+            current_sol = neighbor[0];
         }
+        if(!tabu_list.empty()) tabu_list.erase(tabu_list.begin());
+        if(cal_distance(current_sol) < cal_distance(best_sol) && check_valid_with_capacity(current_sol, capacity))
+            best_sol = current_sol;
     }
-    return original_route;
+    return best_sol;
 }
 
-void two_opt_operation() {
-    vector<int> original_config;
-    for(int k = 0; k < K; k++) {
-        // 2-opt in each route
-        vector<int> temp = two_opt_for_each(initRoutes[k], k);
-        cout << temp.size() << '\n';
-        for(auto i:temp) cout << i << ' ';
-        cout << '\n';
-    }
-}
 
-void printAfter2Opt() {
-    cout << "After 2-opt operation\n";
-    for(int k = 0; k < K; k++) {
-        cout << "Route " << k << ":\n";
-        for(auto i:initRoutes[k]) {
-            cout << i << ' ';
-        }
-        cout << '\n';
-    }
-    cout << "Sum after 2-opt\n";
-    for(int k = 0; k < K; k++) {
-        cout << "Routes " << k << " = " << sumRoutes[k] << "\n";
-    }
-}
+using namespace std::chrono;
 
+
+// ! **************************REMINDER************************************* ! //
+
+//* the index for car's capacity is in range (0, K - 1)
+//* the index for weigh of parcels is in range(1, M)
+
+// ! *********************************************************************** ! //
 
 void Enter() {
     cin >> N >> M >> K;
@@ -305,42 +252,81 @@ void Enter() {
     for(int i = 0; i <= 2*N + 2*M; i++) {
         for(int j = 0; j <= 2*N + 2*M; j++) cin >> d[i][j];
     }
+}
+
+/* outline
+with each route, create a matrix distance for that route, then use the optimize algorithm
+*/
+
+void output_answer(vector<vector<pii>> ans) {
+    cout << K << '\n';
     for(int i = 0; i < K; i++) {
-        routes[i].push_back(0);
+        int cnt = 0;
+        for(auto k:ans[i]) {
+            if(k.first >= 1 && k.first <= N) cnt += 2;
+            else cnt++;
+        }
+        cout << cnt << '\n';
+        for(auto k:ans[i]) {
+            if(k.first >= 1 && k.first <= N) cout << k.first << ' ' << k.second << ' ';
+            else cout << k.first << ' ';
+        }
+        cout << " - " << cal_distance(ans[i]) << '\n';
     }
 }
 
-void solve() {
-    initConfig();
-    //printInitConfig();
-    cout << K << "\n";
-    two_opt_operation();
-    //printAfter2Opt();
-    /*
-    cout << K << '\n';
-    for(int k = 0; k < K; k++) {
-        cout << initRoutes[k].size() << "\n";
-        for(auto i:initRoutes[k]) cout << i << ' ';
-        cout << '\n';
-    }*/
+vector<vector<pii>> ans, final_ans;
+vector<pii> single_ans;
+
+void solving_tabu_seach() {
+    vector<vector<pair<int, int>>> schedule;
+    int mn = INT_MAX, mx = 0;
+    for(int iterator = 0; iterator < 10; iterator++) {
+        schedule.clear();
+        if(iterator&1) schedule = random_configuration(K, N + M);
+        else 
+            schedule = uniform_random_configuration(K, N + M);
+        ans.clear();
+        for(int id = 0; id < schedule.size(); id++) {
+            single_ans.clear();
+            int num_cities = schedule[id].size();
+            single_ans = tabu_search(schedule[id], Q[id]);
+            ans.push_back(single_ans);
+        }
+        mx = 0;
+        for(int id = 0; id < K; id++) {
+            mx = max(mx, cal_distance(ans[id]));
+        } 
+        if(mn > mx) {
+            mn = mx;
+            final_ans = ans;
+        }
+    }
+    output_answer(final_ans);
+}
+
+void solving() {
+    solving_tabu_seach();
+
 }
 
 int32_t main() {
-    time_t start, end;
-    time(&start);
-    srand(time(NULL));
     tachyon;
     if(ifstream(taskname".inp")) {
         freopen(taskname".inp", "r", stdin);
         freopen(taskname".out", "w", stdout);
     }
+    srand(static_cast<unsigned>(std::time(0)));
+    auto start = high_resolution_clock::now();
     Enter();
-    init();
-    solve();
+    // testing();
+    solving();
     
-    time(&end);
-    //cout << "Time taken: " << fixed << setprecision(5) << (end - start) << " sec";
-	return 0;
+    auto stop = high_resolution_clock::now();
+    
+    auto duration = duration_cast<milliseconds>(stop - start);
+    cerr << fixed << setprecision(5) << (double)duration.count() / 1000 << '\n';
+    return 0;
 }
 
 /*
