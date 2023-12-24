@@ -1,7 +1,7 @@
 //Mus
 //#define _CRT_NONSTDC_NO_WaRNINGS
 #include <bits/stdc++.h>
-#include "declaration.hpp"
+#include "tabu_seach.hpp"
 using namespace std;
 using namespace std::chrono;
 
@@ -29,24 +29,93 @@ void Enter() {
 with each route, create a matrix distance for that route, then use the optimize algorithm
 */
 
-void solving() {
-    vector<vector<pair<int, int>>> schedule = random_configuration(K, N + M);
-    for(int id = 0; id < schedule.size(); id++) {
-        vector<vector<int>> mat = generate_distance_matrix(schedule[id]);
-        int num_cities = mat.size() - 1;
-        cout << "id = " << id << '\n';
-        for(auto i:schedule[id]) {
-            if(i.first >= 1 && i.first <= N) cout << i.first << ' ' << i.second << ' ';
-            else cout << i.first << ' ';
+void output_answer(vector<vector<pii>> ans) {
+    cout << K << '\n';
+    for(int i = 0; i < K; i++) {
+        int cnt = 0;
+        for(auto k:ans[i]) {
+            if(k.first >= 1 && k.first <= N) cnt += 2;
+            else cnt++;
         }
-        cout << '\n';
-        for(int i = 1; i < mat.size(); i++) {
-            for(int j = 1; j < mat.size(); j++) {
-                cout << mat[i][j] << ' ';
-            }
-            cout << '\n';
+        cout << cnt << '\n';
+        for(auto k:ans[i]) {
+            if(k.first >= 1 && k.first <= N) cout << k.first << ' ' << k.second << ' ';
+            else cout << k.first << ' ';
+        }
+        cout << " - " << cal_distance(ans[i]) << '\n';
+    }
+}
+
+vector<vector<pii>> ans, final_ans;
+vector<pii> single_ans;
+
+void solving_tabu_seach() {
+    auto start = high_resolution_clock::now();
+    vector<vector<pair<int, int>>> schedule;
+    int mn = INT_MAX, mx = 0;
+    for(int iterator = 0; iterator < 10; iterator++) {
+        schedule.clear();
+        if(iterator&1) schedule = random_configuration(K, N + M);
+        else 
+            schedule = uniform_random_configuration(K, N + M);
+        ans.clear();
+        for(int id = 0; id < schedule.size(); id++) {
+            single_ans.clear();
+            int num_cities = schedule[id].size();
+            single_ans = tabu_search(schedule[id], Q[id]);
+            ans.push_back(single_ans);
+        }
+        mx = 0;
+        for(int id = 0; id < K; id++) {
+            mx = max(mx, cal_distance(ans[id]));
+        } 
+        if(mn > mx) {
+            mn = mx;
+            final_ans = ans;
         }
     }
+    output_answer(final_ans);
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<milliseconds>(stop - start);
+    cout << "Tabu-search running time = " << fixed << setprecision(5) << (double)duration.count() / 1000 << '\n';
+}
+
+void GA() {
+    auto start = high_resolution_clock::now();
+    vector<vector<pair<int, int>>> schedule;
+    int mn = INT_MAX, mx = 0;
+    for(int iterator = 0; iterator < 10; iterator++) {
+        schedule.clear();
+        if(iterator&1) schedule = random_configuration(K, N + M);
+        else 
+            schedule = uniform_random_configuration(K, N + M);
+        ans.clear();
+        for(int id = 0; id < schedule.size(); id++) {
+            single_ans.clear();
+            int num_cities = schedule[id].size();
+
+            //single_ans = tabu_search(schedule[id], Q[id]);
+
+
+
+            ans.push_back(single_ans);
+        }
+        mx = 0;
+        for(int id = 0; id < K; id++) {
+            mx = max(mx, cal_distance(ans[id]));
+        } 
+        if(mn > mx) {
+            mn = mx;
+            final_ans = ans;
+        }
+    }
+    output_answer(final_ans);
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<milliseconds>(stop - start);
+    cout << "Tabu-search running time = " << fixed << setprecision(5) << (double)duration.count() / 1000 << '\n';
+}
+void solving() {
+    // solving_tabu_seach();
 
 }
 
@@ -57,11 +126,11 @@ int32_t main() {
         freopen(taskname".out", "w", stdout);
     }
     srand(static_cast<unsigned>(std::time(0)));
-    auto start = high_resolution_clock::now();
     Enter();
     // testing();
     solving();
     
+    auto start = high_resolution_clock::now();
     auto stop = high_resolution_clock::now();
     
     auto duration = duration_cast<milliseconds>(stop - start);
