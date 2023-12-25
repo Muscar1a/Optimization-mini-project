@@ -11,7 +11,7 @@ typedef long double ld;
 #define all(x)          (x.begin(), x.end())
 #define MOD (ll)(1e9 + 7)
 const int maxn = 1e5 + 10, inf = 0x3f3f3f3f;
-#define taskname "almost"
+#define taskname "complete"
 #define pii pair<int, int>
 unsigned seed = static_cast<unsigned>(std::chrono::system_clock::now().time_since_epoch().count());
 random_device rd; 
