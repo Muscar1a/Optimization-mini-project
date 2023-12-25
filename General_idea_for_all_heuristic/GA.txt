@@ -1,0 +1,5 @@
+Generate random configuration: 
+-> Assume that we have k routes
+With route k_i:
+- Create the population (size around 30~40)
+- Take the elites chromosomes (around 5)

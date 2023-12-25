@@ -12,14 +12,17 @@ typedef long double ld;
 #define MOD (ll)(1e9 + 7)
 const int maxn = 1e5 + 10, inf = 0x3f3f3f3f;
 #define taskname "almost"
-
+#define pii pair<int, int>
+unsigned seed = static_cast<unsigned>(std::chrono::system_clock::now().time_since_epoch().count());
+random_device rd; 
+mt19937 g(seed);
 // ! *************************DECLARATION********************************** ! //
 
 struct savings {
     int saving, i, j;
 };
 int K, N, M;
-int d[1005][1005], initDeliver[2005], sumRoutes[2005];
+int d[2005][2005], initDeliver[2005], sumRoutes[2005];
 int q[205], Q[205], remCap[205];
 map<pair<int, int>, int> s_value; // saving_value
 vector<pair<int, int>> needtotake;
@@ -29,157 +32,85 @@ vector<int> considering;
 
 // ! *********************************************************************** ! //
 
-bool cmp(savings a, savings b) {
-    return a.saving > b.saving;
-}
-
 int Rand(int L, int R) {
     return L + rand() % (R - L + 1);
 }
 
-void init() {
-    for(int i = 1; i <= N + M; i++) {
-        needtotake.push_back({d[0][i], i});
-        initDeliver[i] = false;
+auto uniform_random_configuration(int num_vehicles, int num_pass_par) {
+    // uniform random configurations
+    vector<int> config(num_pass_par);
+    iota(config.begin(), config.end(), 1);
+    shuffle(config.begin(), config.end(), g);
+    vector<vector<pair<int, int>>> configuration;
+    int num_per_car = num_pass_par / num_vehicles;
+    for(int i = 0; i < num_vehicles; i++) {
+        auto start = config.begin() + i * num_per_car;
+        auto end = (i == num_vehicles - 1) ? config.end() : start + num_per_car;
+        vector<pair<int, int>> single_config;
+        for(auto it = start; it != end; it++) {
+            if(*it >= 1 && *it <= N)
+                single_config.push_back({*it, *it + N + M});
+            else 
+                single_config.push_back({*it, -1});
+        }
+        configuration.push_back(single_config);
     }
-    sort(needtotake.begin(), needtotake.end());
-    for(int i = 1; i <= 2*N + 2*M; i++) {
-        for(int j = i + 1; j <= 2*N + 2*M; j++) {
-            int temp = d[0][i] + d[0][j] - d[i][j];
-            save.push_back({temp, i, j});
-            s_value[{i, j}] = s_value[{j, i}] = temp;
+    for(int i = 0; i < num_vehicles; i++) {
+        vector<pair<int, int>> single_config = configuration[i];
+        for(auto k:configuration[i]) {
+            if(k.first > N)
+                single_config.push_back({k.first + N + M, -1});
+        }
+        //sort(single_config.begin(), single_config.end());
+        single_config.insert(single_config.begin(), {0, -1});
+        single_config.push_back({0, -1});
+        configuration[i] = single_config;
+    }
+    return configuration;
+}
+
+auto random_configuration(int num_vehicles, int num_pass_par) {
+    vector<vector<pair<int, int>>> configuration(num_vehicles);
+    for(int p = 1; p <= num_pass_par; p++) {
+        int index = Rand(0, num_vehicles - 1);
+        if(p >= 1 && p <= N) {
+            configuration[index].push_back({p, p + N + M});
+        } else {
+            configuration[index].push_back({p, - 1});
+            configuration[index].push_back({p + N + M, -1});
         }
     }
-    sort(save.begin(), save.end(), cmp);
-
-    for(int i = 0; i < K; i++) initRoutes[i].push_back(0);
-}
-
-void initConfig() {
-    for(int i = 0; i < needtotake.size(); i++) {
-        int index = Rand(0, K - 1);
-        initRoutes[index].push_back(needtotake[i].second);
-    } 
-}
-
-/*
-pair<pair<int, int>, int> try_to_return_thing(int from, int to, int k, int* currentCapacity) {
-    considering.clear();
-    int* Cap = currentCapacity;
-    for(auto p:initRoutes[k]) {
-        if(p > N && p <= N + M && !initDeliver[p]) considering.push_back(p);
+    for(int i = 0; i < num_vehicles; i++) {
+        vector<pair<int, int>> single_config = configuration[i];
+        //sort(single_config.begin(), single_config.end());
+        single_config.insert(single_config.begin(), {0, -1});
+        single_config.push_back({0, -1});
+        configuration[i] = single_config;
     }
-    int mn = INT_MAX, goth, ori; //goth = go through
-    //i am return only one parcel to their destination
-    for(auto g:considering) {
-        // g is parcel => g + N + M is the destination, we have to go throught this
-        int pastThis = g + N + M;
-        if(mn > d[from][pastThis] + d[pastThis][to] && (Cap[k] + q[g - N]) > q[to - N]) {
-            mn = d[from][pastThis] + d[pastThis][to];
-            ori = g;
-            goth = pastThis;
-        }
-    }
-    return {{goth, ori}, mn};
+    return configuration;
 }
-
-void initConfig() {
-    for(int i = 0; i < needtotake.size(); i++) {
-        int node = needtotake[i].second;    //* => currently accessing node
-        int insRoute, mn = INT_MAX;
-                
-        //* when the current reaching node is a parcel
-        if(node > N && node <= N + M) {
-            bool rtg = false; // return then go
-            int go, ori; // if have to return then go
-            //* current parcel capacity us q[node - N]
-            for(int k = 0; k < K; k++) {
-                int last = initRoutes[k].back();
-                if(remCap[k] >= q[node - N]) {
-                    if(mn > d[last][node]) {
-                        mn = d[last][node];
-                        remCap[k] -= q[node - N];
-                        insRoute = k;
-                        rtg = false;
-                    }
-                } else {
-                    int temp = INT_MAX, tempInsRoute;
-                    bool tempRtg = false;
-                    //? try to return things
-                    pair<pair<int, int>, int> gothrought = try_to_return_thing(last, node, k, remCap);
-                    int mntemp = gothrought.second;
-                    if(mn > mntemp) {
-                        mn = mntemp;
-                        insRoute = k;
-                        rtg = true;
-                        go = gothrought.first.first;
-                        ori = gothrought.first.second;
-                    }
-                }
-            }
-            // push to initRoute step
-            if(rtg) {
-                initRoutes[insRoute].push_back(go);
-                initRoutes[insRoute].push_back(node);
-                remCap[insRoute] = remCap[insRoute] + q[ori - N] - q[node - N];
-                initDeliver[ori] = true;
+int cal_distance(vector<pii> route) {
+    int sum = 0;
+    for(int i = 1; i < route.size(); i++) {
+        if(route[i].first <= N && route[i].first > 0) {
+            if(route[i - 1].first <= N && route[i - 1].first > 0) {
+                sum += d[route[i - 1].second][route[i].first];
+                sum += d[route[i].first][route[i].second];
             } else {
-                initRoutes[insRoute].push_back(node);
-                remCap[insRoute] -= q[node - N];
+                sum += d[route[i - 1].first][route[i].first];
+                sum += d[route[i].first][route[i].second];
             }
-        } else if(node >= 1 && node <= N) { //* the current node has a passenger waiting
-            int mn = INT_MAX;
-            for(int k = 0; k < K; k++) {
-                int last = initRoutes[k].back();
-                if(mn > d[last][node]) {
-                    mn = d[last][node];
-                    insRoute = k;
-                }
+        } else {
+            if(route[i - 1].first <= N && route[i - 1].first > 0) {
+                sum += d[route[i - 1].second][route[i].first];
             }
-            initRoutes[insRoute].push_back(node);
-            initRoutes[insRoute].push_back(node + N + M);
-            
+            else {
+                sum += d[route[i - 1].first][route[i].first];
+            }
         }
     }
-
-    // * fulfill the initial routes
-    for(int k = 0; k < K; k++) {
-        considering.clear();
-        for(auto p:initRoutes[k]) {
-            if(p > N && p <= N + M && !initDeliver[p]) considering.push_back(p);
-        }
-        for(auto p:considering) {
-            initDeliver[p] = true;
-            initRoutes[k] .push_back(p + N + M);
-        }
-        initRoutes[k].push_back(0);
-    }
-    for(int k = 0; k < K; k++) {
-        int sum = 0;
-        for(int i = 1; i < initRoutes[k].size(); i++) {
-            sum += d[initRoutes[k][i - 1]][initRoutes[k][i]];
-        }
-        sumRoutes[k] = sum;
-    }
+    return sum;
 }
-
-void printInitConfig() {
-    cout << "need to take\n";
-    for(auto i:needtotake) cout << i.first << " " << i.second << '\n';
-    cout << '\n';
-    cout << "Initial configuration\n";
-    for(int i = 0; i < K; i++) {
-        cout << "i = " << i << ":\n";
-        for(auto j:initRoutes[i]) cout << j << ' ';
-        cout << '\n';
-    }
-    cout << "Initial sum of each route\n";
-    for(int k = 0; k < K; k++) {
-        cout << "Routes " << k << " = " << sumRoutes[k] << "\n";
-    }
-}
-*/
-
 
 // ! **************************REMINDER************************************* ! //
 

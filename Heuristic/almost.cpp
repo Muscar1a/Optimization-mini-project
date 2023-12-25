@@ -1,8 +1,10 @@
 //Mus
 //#define _CRT_NONSTDC_NO_WaRNINGS
 #include <bits/stdc++.h>
-#include "2opt.hpp"
+#include "tabu_seach.hpp"
+
 using namespace std;
+using namespace std::chrono;
 
 
 // ! **************************REMINDER************************************* ! //
@@ -22,41 +24,95 @@ void Enter() {
     for(int i = 0; i <= 2*N + 2*M; i++) {
         for(int j = 0; j <= 2*N + 2*M; j++) cin >> d[i][j];
     }
+}
+
+/* outline
+with each route, create a matrix distance for that route, then use the optimize algorithm
+*/
+
+void output_answer(vector<vector<pii>> ans) {
+    cout << K << '\n';
     for(int i = 0; i < K; i++) {
-        routes[i].push_back(0);
+        int cnt = 0;
+        for(auto k:ans[i]) {
+            if(k.first >= 1 && k.first <= N) cnt += 2;
+            else cnt++;
+        }
+        cout << cnt << '\n';
+        for(auto k:ans[i]) {
+            if(k.first >= 1 && k.first <= N) cout << k.first << ' ' << k.second << ' ';
+            else cout << k.first << ' ';
+        }
+        cout << " - " << cal_distance(ans[i]) << '\n';
     }
 }
 
-void solve() {
-    initConfig();
-    //printInitConfig();
-    two_opt_operation();
-    //printAfter2Opt();
-    /*
-    cout << K << '\n';
-    for(int k = 0; k < K; k++) {
-        cout << initRoutes[k].size() << "\n";
-        for(auto i:initRoutes[k]) cout << i << ' ';
-        cout << '\n';
-    }*/
+vector<vector<pii>> ans, final_ans;
+vector<pii> single_ans;
+
+void solving_tabu_seach() {
+    cout << "Tabu-search\n";
+    auto start = high_resolution_clock::now();
+    vector<vector<pair<int, int>>> schedule;
+    int mn = INT_MAX, mx = 0;
+    for(int iterator = 0; iterator < 10; iterator++) {
+        schedule.clear();
+        if(iterator&1) schedule = random_configuration(K, N + M);
+        else 
+            schedule = uniform_random_configuration(K, N + M);
+        ans.clear();
+        bool is_valid = true;
+        for(int id = 0; id < schedule.size(); id++) {
+            if(check_valid_with_capacity(schedule[id], Q[id]) == false) {
+                is_valid = false;
+                break;
+            }
+            single_ans.clear();
+            int num_cities = schedule[id].size();
+            single_ans = tabu_search(schedule[id], Q[id]);
+            ans.push_back(single_ans);
+        }
+        if(is_valid == false) continue;
+        mx = 0;
+        for(int id = 0; id < K; id++) {
+            mx = max(mx, cal_distance(ans[id]));
+        } 
+        if(mn > mx) {
+            mn = mx;
+            final_ans = ans;
+        }
+    }
+    output_answer(final_ans);
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<milliseconds>(stop - start);
+    cout << "Running time = " << fixed << setprecision(5) << (double)duration.count() / 1000 << '\n';
+}
+
+void solving() {
+    solving_tabu_seach();
+}
+
+void testing() {
+    
 }
 
 int32_t main() {
-    time_t start, end;
-    time(&start);
-    srand(time(NULL));
     tachyon;
     if(ifstream(taskname".inp")) {
         freopen(taskname".inp", "r", stdin);
         freopen(taskname".out", "w", stdout);
     }
+    srand(static_cast<unsigned>(std::time(0)));
     Enter();
-    init();
-    solve();
+    testing();
+    solving();
     
-    time(&end);
-    //cout << "Time taken: " << fixed << setprecision(5) << (end - start) << " sec";
-	return 0;
+    auto start = high_resolution_clock::now();
+    auto stop = high_resolution_clock::now();
+    
+    auto duration = duration_cast<milliseconds>(stop - start);
+    // cerr << fixed << setprecision(5) << (double)duration.count() / 1000 << '\n';
+    return 0;
 }
 
 /*
