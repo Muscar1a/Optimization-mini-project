@@ -59,12 +59,18 @@ void solving_tabu_seach() {
         else 
             schedule = uniform_random_configuration(K, N + M);
         ans.clear();
+        bool is_valid = true;
         for(int id = 0; id < schedule.size(); id++) {
+            if(check_valid_with_capacity(schedule[id], Q[id]) == false) {
+                is_valid = false;
+                break;
+            }
             single_ans.clear();
             int num_cities = schedule[id].size();
             single_ans = tabu_search(schedule[id], Q[id]);
             ans.push_back(single_ans);
         }
+        if(is_valid == false) continue;
         mx = 0;
         for(int id = 0; id < K; id++) {
             mx = max(mx, cal_distance(ans[id]));
@@ -115,8 +121,13 @@ void GA() {
     cout << "Tabu-search running time = " << fixed << setprecision(5) << (double)duration.count() / 1000 << '\n';
 }
 void solving() {
-    // solving_tabu_seach();
+    
+    solving_tabu_seach();
 
+}
+
+void testing() {
+    cout << check_valid_with_capacity({{0, -1}, {1, 11}, {7, -1}, {17, -1}, {0, -1}}, Q[0]);
 }
 
 int32_t main() {
