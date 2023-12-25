@@ -1,7 +1,8 @@
 //Mus
 //#define _CRT_NONSTDC_NO_WaRNINGS
 #include <bits/stdc++.h>
-#include "tabu_seach.hpp"
+//#include "tabu_seach.hpp"
+#include "GA.hpp"
 using namespace std;
 using namespace std::chrono;
 
@@ -48,8 +49,9 @@ void output_answer(vector<vector<pii>> ans) {
 
 vector<vector<pii>> ans, final_ans;
 vector<pii> single_ans;
-
+/*
 void solving_tabu_seach() {
+    cout << "Tabu-search\n";
     auto start = high_resolution_clock::now();
     vector<vector<pair<int, int>>> schedule;
     int mn = INT_MAX, mx = 0;
@@ -83,10 +85,12 @@ void solving_tabu_seach() {
     output_answer(final_ans);
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(stop - start);
-    cout << "Tabu-search running time = " << fixed << setprecision(5) << (double)duration.count() / 1000 << '\n';
+    cout << "Running time = " << fixed << setprecision(5) << (double)duration.count() / 1000 << '\n';
 }
+*/
 
 void GA() {
+    cout <<"Genetic algorithm \n";
     auto start = high_resolution_clock::now();
     vector<vector<pair<int, int>>> schedule;
     int mn = INT_MAX, mx = 0;
@@ -99,10 +103,15 @@ void GA() {
         for(int id = 0; id < schedule.size(); id++) {
             single_ans.clear();
             int num_cities = schedule[id].size();
-
-            //single_ans = tabu_search(schedule[id], Q[id]);
-
-
+            // start gene
+            cout << "Initial schedule: " << schedule[id].size() << '\n';
+            for(auto i:schedule[id]) {
+                if(i.first >= 1 && i.first <= N) cout << i.first << ' ' << i.second << ' ';
+                else cout << i.first << ' ';
+            } 
+            cout << "\nGene\n";
+            gene(schedule[id], Q[id]);
+            return;
 
             ans.push_back(single_ans);
         }
@@ -118,16 +127,16 @@ void GA() {
     output_answer(final_ans);
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(stop - start);
-    cout << "Tabu-search running time = " << fixed << setprecision(5) << (double)duration.count() / 1000 << '\n';
+    cout << "Running time = " << fixed << setprecision(5) << (double)duration.count() / 1000 << '\n';
 }
-void solving() {
-    
-    solving_tabu_seach();
 
+void solving() {
+    //solving_tabu_seach();
+    GA();
 }
 
 void testing() {
-    cout << check_valid_with_capacity({{0, -1}, {1, 11}, {7, -1}, {17, -1}, {0, -1}}, Q[0]);
+    
 }
 
 int32_t main() {
@@ -138,7 +147,7 @@ int32_t main() {
     }
     srand(static_cast<unsigned>(std::time(0)));
     Enter();
-    // testing();
+    testing();
     solving();
     
     auto start = high_resolution_clock::now();

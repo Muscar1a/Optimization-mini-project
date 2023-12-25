@@ -37,7 +37,7 @@ int Rand(int L, int R) {
 }
 
 auto uniform_random_configuration(int num_vehicles, int num_pass_par) {
-    // uniform random configuration
+    // uniform random configurations
     vector<int> config(num_pass_par);
     iota(config.begin(), config.end(), 1);
     shuffle(config.begin(), config.end(), g);

@@ -4,34 +4,48 @@ using namespace std;
 
 #define pii pair<int, int> 
 
-vector<int> children(vector<int> listNode, vector<pii> state) {
-
-}
-vector<pii> generateValidState() {
-    vector<pii> state = {{0, -1}};
-    vector<int> listNode(N + M);
-    iota(listNode.begin(), listNode.end(), 1);
-    int cap = 0;
-    while(1) {
-        vector<int> listNext = children(listNode, state);
-        int nextCity; bool ok = false;
-        while(1) {
-           nextCity = listNext[rand() % listNext.size()];
-            if(nextCity != 0) {
-                if(nextCity > N && nextCity <= N + M) {
-                    
-                }
-            }
-        }
-        state.push_back({nextCity, -1});
+// the random configuration is a vector of vector of pair<int, int>
+bool find(vector<pii> a, pii b) {
+    for(auto i:a) {
+        if(i.first == b.first && i.second == b.second) return true;
     }
-    state.push_back({0, -1});
-    return state;
+    return false;
 }
 
-auto gene(int maxIter = 10, int population_size = 40, double crossover_rate = 0.6) {
+int current_cap(vector<pii> state) {
+    int cap = 0;
+    for(auto i:state) {
+        if(i.first > N && i.first <= N + M) cap -= q[i.first - N];
+        else if(i.first > N + M) cap += q[i.first - 2*N - M];
+    }
+}
+vector<pii> Children(vector<pii> listNode, vector<pii> state, int capacity) {
+    int curCap = current_cap(state);
+    vector<pii> child;
+    for(auto i:listNode) {
+       
+    }
+}
+
+vector<pii> generateValidState(vector<pii> initConfig, int capacity) {
+    vector<pii> listNode = initConfig;
+    vector<pii> state = {{0, -1}};
+    int curCap = 0;
+    while(1) {
+        return {{-1, -1}};
+    }
+}
+
+auto gene(vector<pii> initConfig, int capacity, int maxIter = 10, int population_size = 40, double crossover_rate = 0.6) {
     vector<pair<vector<pii>, int>> list_gene;
     while(list_gene.size() != population_size) {
-        vector<pii> initGene = generateValidState();
+        vector<pii> initGene = generateValidState(initConfig, capacity);
+        list_gene.push_back({initGene, cal_distance(initGene)});
+        for(auto i:initGene) {
+            if(i.first >= 1 && i.first <= N) cout << i.first << ' ' << i.second << ' ';
+            else cout << i.first << ' ';
+        }
+        cout << '\n';
+        return;
     }
 }
