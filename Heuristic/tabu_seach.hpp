@@ -41,6 +41,7 @@ bool check_valid(vector<pii> route) {
     return check;
 }
 
+//* guarantee true
 bool check_valid_with_capacity(vector<pii> route, int capacity) {
     for(int i = 1; i <= 2*N + 2*M; i++) initDeliver[i] = false;
     bool check = true;
@@ -61,9 +62,10 @@ bool check_valid_with_capacity(vector<pii> route, int capacity) {
             if(capacity >= q[nodea - N]) capacity -= q[nodea - N];
             else check = false;
         } else if(nodea > N + M) {
-            capacity += q[nodea - N - M];
+            capacity += q[nodea - 2*N - M];
         }
     }
+
     return check;
 }
 
