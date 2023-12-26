@@ -2,6 +2,7 @@
 //#define _CRT_NONSTDC_NO_WaRNINGS
 #include <bits/stdc++.h>
 #include "tabu_seach.hpp"
+#include "declaration.hpp"
 
 using namespace std;
 using namespace std::chrono;
@@ -86,6 +87,10 @@ void solving_tabu_seach() {
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(stop - start);
     cout << "Running time = " << fixed << setprecision(5) << (double)duration.count() / 1000 << '\n';
+}
+
+void solving_hill_climbing() {
+    
 }
 
 void solving() {
