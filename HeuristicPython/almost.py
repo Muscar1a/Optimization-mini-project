@@ -44,6 +44,15 @@ def random_configuration(num_cars, num_par, num_pass, iter):
 
     return uniform_random_conf()
 
+def return_true_config(given_config, num_pass, num_par):
+    true_config = []
+    for i in given_config:
+        true_config.append(i)
+        if i >= 1 and i <= num_pass:
+            true_config.append(i + num_par + num_pass)
+    return true_config
+    
+    
 # Main and input
 
 """
@@ -53,7 +62,10 @@ Q = [int(x) for x in input().split()] # size = K
 d = [list(map(int, input().split())) for _ in range(2*N + 2*M + 1)] # size = (2*N + 2*M + 1)*(2*N + 2*M + 1)
 """
 # Read input from file
-with open("E:\CODE\Optimize\Project\Optimization-mini-project\HeuristicPython\\almost.inp", "r") as file:
+
+
+
+with open("D:\GIT\Optimization-mini-project\HeuristicPython\\almost.inp", "r") as file:
     N, M, K = map(int, file.readline().split())
     q = list(map(int, file.readline().split()))  # size = M
     Q = list(map(int, file.readline().split()))  # size = K
@@ -84,7 +96,7 @@ if __name__ == "__main__":
             # print("Initial schedule is: ", schedule)
             temp_res = ga.solving_gene()
             
-            res_conf.append(temp_res[1])
+            res_conf.append(temp_res)
             if max_res_each_config < temp_res[0]:
                 max_res_each_config = temp_res[0]
             
@@ -92,8 +104,13 @@ if __name__ == "__main__":
             final_res = max_res_each_config
             final_res_config = res_conf
     
+    print(num_cars)
     for conf in final_res_config:
-        print(conf)
+        true_config = return_true_config(conf[1], num_pass, num_par)
+        print(len(true_config))
+        for i in true_config:
+            print(i, end = " ")
+        print(f"- {conf[0]}")
             
     # TODO: fullfill the output
     
