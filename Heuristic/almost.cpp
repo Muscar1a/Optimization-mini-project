@@ -51,36 +51,30 @@ vector<vector<pii>> ans, final_ans;
 vector<pii> single_ans;
 
 void solving_tabu_seach() {
-    cout << "Tabu-search\n";
+    // cout << "Tabu-search\n";
     auto start = high_resolution_clock::now();
     vector<vector<pair<int, int>>> schedule;
     int mn = INT_MAX, mx = 0;
-    for(int iterator = 0; iterator < 20; iterator++) {
+
         schedule.clear();
-        if(iterator&1) schedule = random_configuration(K, N + M);
-        else 
-            schedule = uniform_random_configuration(K, N + M);
-        ans.clear();
-        bool is_valid = true;
-        for(int id = 0; id < schedule.size(); id++) {
-            if(check_valid_with_capacity(schedule[id], Q[id]) == false) {
-                is_valid = false;
-                break;
-            }
-            single_ans.clear();
-            int num_cities = schedule[id].size();
-            single_ans = tabu_search(schedule[id], Q[id]);
-            ans.push_back(single_ans);
-        }
-        if(is_valid == false) continue;
-        mx = 0;
-        for(int id = 0; id < K; id++) {
-            mx = max(mx, cal_distance(ans[id]));
-        } 
-        if(mn > mx) {
-            mn = mx;
-            final_ans = ans;
-        }
+        // if(iterator&1) schedule = random_configuration(K, N + M);
+        // else 
+    schedule = uniform_random_configuration(K, N + M);
+    ans.clear();
+    bool is_valid = true;
+    for(int id = 0; id < schedule.size(); id++) {
+        single_ans.clear();
+        int num_cities = schedule[id].size();
+        single_ans = tabu_search(schedule[id], Q[id]);
+        ans.push_back(single_ans);
+    }
+    mx = 0;
+    for(int id = 0; id < K; id++) {
+        mx = max(mx, cal_distance(ans[id]));
+    } 
+    if(mn > mx) {
+        mn = mx;
+        final_ans = ans;
     }
     output_answer(final_ans);
     auto stop = high_resolution_clock::now();
