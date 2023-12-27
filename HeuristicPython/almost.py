@@ -53,6 +53,17 @@ def return_true_config(given_config, num_pass, num_par):
     return true_config
     
     
+def cal_distance(config, distance_matrix, num_pass, num_par):
+        cost = 0
+        explore = []
+        for city in range(1, len(config)):
+            explore.append(config[city])
+            cost += distance_matrix[config[city - 1]][config[city]]
+            if config[city] > 2*num_pass + num_par:
+                if (config[city] - num_pass - num_par) not in explore:
+                    return (-1)
+        return cost
+            
 # Main and input
 
 """
@@ -84,10 +95,13 @@ if __name__ == "__main__":
     print("Genetic Algorithm")
     ga_start_time = time.time()
     
+    # matrix distance is correct
     
     final_res = 1e9
     final_res_config = []
+    
     for iter in range(10):
+        # print(f"iter {iter}:")
         res_conf = []
         dict_schedule = random_configuration(num_cars, num_par, num_pass, iter)
         max_res_each_config = 0
@@ -97,12 +111,14 @@ if __name__ == "__main__":
             temp_res = ga.solving_gene()
             
             res_conf.append(temp_res)
-            if max_res_each_config < temp_res[0]:
-                max_res_each_config = temp_res[0]
-            
+            temp = cal_distance(return_true_config(temp_res[1], num_pass, num_par), matrix_distance, num_pass, num_par)
+            if max_res_each_config < temp:
+                max_res_each_config = temp
+            # print(temp_res[1], temp_res[0], sep = " - ", end='\n')
         if final_res > max_res_each_config:
             final_res = max_res_each_config
             final_res_config = res_conf
+        # print(final_res)
     
     print(num_cars)
     for conf in final_res_config:
@@ -110,8 +126,8 @@ if __name__ == "__main__":
         print(len(true_config))
         for i in true_config:
             print(i, end = " ")
-        print(f"- {conf[0]}")
-            
+        print(f"- {cal_distance(true_config, matrix_distance, num_pass, num_par)}")    
+    print(final_res)
     # TODO: fullfill the output
     
     total_running_time = time.time() - ga_start_time

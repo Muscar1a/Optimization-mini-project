@@ -39,8 +39,8 @@ class Genetic_Algorithm():
             
             
     def cal_distance(self, config):
+        # print("cal_distance_step:\n", config)
         if self.check_capacity(config) == False:
-            print("h")
             return (-1)
     
         cost = 0
@@ -187,7 +187,7 @@ class Genetic_Algorithm():
         while len(population) != num_genes:
             initial_gene = self.generateValidState()
             population.append([initial_gene, self.cal_distance(self.return_true_config(initial_gene))])
-        
+        # print("\n\nGene step")
         population.sort(key=lambda x: x[1])
         elites_pop = copy.deepcopy(population[:num_elites])
         cur_opt_cost = 0
