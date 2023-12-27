@@ -2,7 +2,6 @@
 //#define _CRT_NONSTDC_NO_WaRNINGS
 #include <bits/stdc++.h>
 #include "tabu_seach.hpp"
-#include "declaration.hpp"
 
 using namespace std;
 using namespace std::chrono;
@@ -56,7 +55,7 @@ void solving_tabu_seach() {
     auto start = high_resolution_clock::now();
     vector<vector<pair<int, int>>> schedule;
     int mn = INT_MAX, mx = 0;
-    for(int iterator = 0; iterator < 10; iterator++) {
+    for(int iterator = 0; iterator < 20; iterator++) {
         schedule.clear();
         if(iterator&1) schedule = random_configuration(K, N + M);
         else 
@@ -89,9 +88,6 @@ void solving_tabu_seach() {
     cout << "Running time = " << fixed << setprecision(5) << (double)duration.count() / 1000 << '\n';
 }
 
-void solving_hill_climbing() {
-    
-}
 
 void solving() {
     solving_tabu_seach();
@@ -109,14 +105,14 @@ int32_t main() {
     }
     srand(static_cast<unsigned>(std::time(0)));
     Enter();
-    testing();
+    // testing();
     solving();
     
     auto start = high_resolution_clock::now();
     auto stop = high_resolution_clock::now();
     
     auto duration = duration_cast<milliseconds>(stop - start);
-    // cerr << fixed << setprecision(5) << (double)duration.count() / 1000 << '\n';
+    cerr << fixed << setprecision(5) << (double)duration.count() / 1000 << '\n';
     return 0;
 }
 
