@@ -128,7 +128,6 @@ if __name__ == "__main__":
             print(i, end = " ")
         print(f"- {cal_distance(true_config, matrix_distance, num_pass, num_par)}")    
     print(final_res)
-    # TODO: fullfill the output
     
     total_running_time = time.time() - ga_start_time
     print(f"Running time = {total_running_time}")
