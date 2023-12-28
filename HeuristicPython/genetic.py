@@ -100,25 +100,7 @@ class Genetic_Algorithm():
             state.append(next_city)
         state.append(0)
         return state
-    
-    '''
-    this was the crossover function, but something went wrong with it
-    python is so complicated, I think if I continue to fix this, it would be a waste of time
-    def selection(self, given):
-        list_node = [given[i] for i in range(len(given))]
-        state = []
-        pos = np.random.choice(np.arange(1, len(given) - 1), size=1)[0]
-        
-        for chromosome in range(pos + 1): 
-            state.append(given(chromosome))
-        while len(state) != len(given) - 1:
-            possible_next_chromosome = self.children(list_node, state)
-            next_chromosome = np.random.choice(possible_next_chromosome, 1)[0]
-            # print(possible_next_chromosome, next_chromosome)
-            state.append(next_chromosome)
-        state.append(0)
-        return state
-    '''
+
     
     def swap_pos(self, config, pos1, pos2):
         config[pos1], config[pos2] = config[pos2], config[pos1]
@@ -182,7 +164,7 @@ class Genetic_Algorithm():
         return new_config
             
     
-    def solving_gene(self, maxIter=10, num_genes=40, crossover_rate=0.6, mutation_rate=0.1, num_elites=5):
+    def solving_gene(self, maxIter=10, num_genes=40, crossover_rate=0.4, mutation_rate=0.1, num_elites=5):
         population = []
         while len(population) != num_genes:
             initial_gene = self.generateValidState()
@@ -201,6 +183,7 @@ class Genetic_Algorithm():
             while j < num_genes//4:
                 j += 1
                 for elite in elites_pop:
+                    #* We should try to crossover, then mutate
                     cross = random.random()
                     if cross > crossover_rate:
                         # crossover randomly
@@ -214,13 +197,6 @@ class Genetic_Algorithm():
                         new_population.append([child2, child2_cost])
                     
                     mutate = random.random()
-                    '''
-                    if mutate > mutation_rate:
-                        new_child = self.selection(elite[0])
-                        new_child_cost = self.compute_capacity(self.return_true_config(new_child))
-                        new_population .append([new_child, new_child_cost])
-                    else:
-                    '''
                     if mutate < mutation_rate:
                         new_child = self.mutation(elite[0])
                         child_cost = self.compute_capacity(self.return_true_config(new_child))
