@@ -100,7 +100,7 @@ if __name__ == "__main__":
     final_res = 1e9
     final_res_config = []
     
-    for iter in range(10):
+    for iter in range(15):
         # print(f"iter {iter}:")
         res_conf = []
         dict_schedule = random_configuration(num_cars, num_par, num_pass, iter)
