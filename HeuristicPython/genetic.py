@@ -164,7 +164,7 @@ class Genetic_Algorithm():
         return new_config
             
     
-    def solving_gene(self, maxIter=20, num_genes=40, crossover_rate=0.4, mutation_rate=0.1, num_elites=5):
+    def solving_gene(self, maxIter=15, num_genes=40, crossover_rate=0.4, mutation_rate=0.1, num_elites=5):
         population = []
         while len(population) != num_genes:
             initial_gene = self.generateValidState()

@@ -9,22 +9,29 @@ import genetic
 # Functions
 
 def random_configuration(num_cars, num_par, num_pass, iter):
-    '''
-    There are some problems with this shit too, fixing is waste of time
     def random_conf():
-        pair_config = defaultdict(lambda: [0, -1])
+        config = defaultdict(lambda: [0])
+        pair_config = defaultdict(lambda: [[0, -1]])
         for items in range(1, num_pass + num_par):
             car = np.random.choice(num_cars, 1)[0]
             if items > num_pass and items <= num_pass + num_par:
-                pair_config[car + 1].append([items, -1])
-                pair_config[car + 1].append([items + num_par + num_pass, -1])
+                config[car + 1].append([items])
+                config[car + 1].append([items + num_par + num_pass])
             elif items >= 1 and items <= num_pass:
-                pair_config[car + 1].append([items, items + num_par + num_pass])
+                config[car + 1].append([items])
         for i in range(1, num_cars + 1):
-            pair_config[i] = sorted(pair_config[i])
-            print(pair_config[i])
+            temp = list()
+            for j in config[i]:
+                if type(j) == list:
+                    temp.append(j[0])
+            sorted(temp)
+            for j in temp:
+                if j >= 1 and j <= num_pass:
+                    pair_config[i].append([j, j + num_par + num_pass])
+                else:
+                    pair_config[i].append([j, -1])
         return pair_config
-    '''
+    
     #* when meet a passenger, just take him, we can temporarily ignore he/she's destination
     def uniform_random_conf():
         pair_config = defaultdict(lambda: [[0, -1]])
@@ -42,7 +49,10 @@ def random_configuration(num_cars, num_par, num_pass, iter):
             pair_config[car + 1].extend(sorted(single_pair_conf))
         return pair_config
 
-    return uniform_random_conf()
+    if iter&1:
+        return uniform_random_conf()
+    else:
+        return random_conf()
 
 def return_true_config(given_config, num_pass, num_par):
     true_config = []
@@ -100,7 +110,7 @@ if __name__ == "__main__":
     final_res = 1e9
     final_res_config = []
     
-    for iter in range(15):
+    for iter in range(16):
         # print(f"iter {iter}:")
         res_conf = []
         dict_schedule = random_configuration(num_cars, num_par, num_pass, iter)
