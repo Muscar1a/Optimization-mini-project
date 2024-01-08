@@ -32,6 +32,7 @@ int32_t main() {
     for(int i = 0; i <= 2*N + 2*M; i++) {
         for(int j = 0; j <= 2*N + 2*M; j++) cin >> d[i][j];
     }
+    /*
     cout << "Teacher's solution\n";
     cin >> K;
     for(int t = 1; t <= K; t++) {
@@ -45,7 +46,7 @@ int32_t main() {
         }
         cout << t << ": " << sum << '\n';
     }
-
+    */
     cout << "My solution\n";
 
     cin >> K;
@@ -55,8 +56,8 @@ int32_t main() {
             cin >> a[i];
         }
         int sum = 0;
-        for(int i = 1; i <= x; i++) {
-            sum += d[a[i - 1]][a[x]];
+        for(int i = 2; i <= x; i++) {
+            sum += d[a[i - 1]][a[i]];
         }
         cout << t << ": " << sum << '\n';
     }
