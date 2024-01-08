@@ -1,5 +1,17 @@
-Generate random configuration: 
--> Assume that we have k routes
-With route k_i:
-- Create the population (size around 30~40)
-- Take the elites chromosomes (around 5)
+Unifomrmly distribute passengers and parcels to k routes
+With each route:
+	GA fucntion
+
+
+GA func():
+	Create population
+	Take 5 strongest chromosomes, named them elite chromosomes
+	FOR day = 0 -> maxIter:
+		Crossover step
+		Mutation step	
+		
+		Recreate the population from offsprings
+		Recreate the elite chromosomes list from the new population
+	ENDFOR.
+	
+	Return the possible answer

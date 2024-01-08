@@ -1,12 +1,24 @@
+"""
+!!! --- Muscaria --- !!!
+"""
+
 # Importing 
 
 from collections import defaultdict
 import time
 import numpy as np 
 import genetic
+# Here I wrote genetic algorithm in a different py file, so I can import it as a module
 
 
-# Functions
+"""
+* The random_configuration func here is the function to generate config as its name
+* Here, there are 2 ways two generate config
+* - Uniform random: divide the passengers and parcels equally to K cars, with each car, I create a full route
+* - Random config: with each passengers or parcels, I randomly assign them with their destination to a car -> We have full route
+* For higher chance to have better solution, I put a parameter named "iter",
+* if iter&1, use "uniform_random_config", else use "random_conf"
+"""
 
 def random_configuration(num_cars, num_par, num_pass, iter):
     def random_conf():
@@ -54,6 +66,7 @@ def random_configuration(num_cars, num_par, num_pass, iter):
     else:
         return random_conf()
 
+# Get full config
 def return_true_config(given_config, num_pass, num_par):
     true_config = []
     for i in given_config:
@@ -63,6 +76,7 @@ def return_true_config(given_config, num_pass, num_par):
     return true_config
     
     
+# Calculate the distance    
 def cal_distance(config, distance_matrix, num_pass, num_par):
         cost = 0
         explore = []
@@ -109,12 +123,19 @@ if __name__ == "__main__":
     
     final_res = 1e9
     final_res_config = []
-    
+    """
+    * Here, I run the genetic algorithm 16 times
+    * so that we have higher chance to get better solution
+    """
     for iter in range(16):
         # print(f"iter {iter}:")
         res_conf = []
         dict_schedule = random_configuration(num_cars, num_par, num_pass, iter)
         max_res_each_config = 0
+        
+        """
+        * With each config, we have k routes, now I will use GA on each route
+        """
         for id_bus, schedule in dict_schedule.items():
             ga = genetic.Genetic_Algorithm(schedule, num_cities, matrix_distance, num_pass, num_pass, cars_capacities[id_bus - 1], q)
             # print("Initial schedule is: ", schedule)
