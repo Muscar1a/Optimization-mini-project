@@ -1,4 +1,0 @@
-Objective value: 54.0
-Xe 1: 0 --> 3 --> 9 --> 2 --> 8 --> 13 , length = 54 ,count = 6
-Xe 2: 0 --> 5 --> 4 --> 10 --> 6 --> 12 --> 11 --> 1 --> 7 --> 13 , length = 53 ,count = 10
-Running time        : 0.25562047958374023 seconds

@@ -1,30 +1,49 @@
+"""
+!!! --- Muscaria --- !!!
+"""
+
 # Importing 
 
 from collections import defaultdict
 import time
 import numpy as np 
 import genetic
+# Here I wrote genetic algorithm in a different py file, so I can import it as a module
 
 
-# Functions
+"""
+* The random_configuration func here is the function to generate config as its name
+* Here, there are 2 ways two generate config
+* - Uniform random: divide the passengers and parcels equally to K cars, with each car, I create a full route
+* - Random config: with each passengers or parcels, I randomly assign them with their destination to a car -> We have full route
+* For higher chance to have better solution, I put a parameter named "iter",
+* if iter&1, use "uniform_random_config", else use "random_conf"
+"""
 
 def random_configuration(num_cars, num_par, num_pass, iter):
-    '''
-    There are some problems with this shit too, fixing is waste of time
     def random_conf():
-        pair_config = defaultdict(lambda: [0, -1])
+        config = defaultdict(lambda: [0])
+        pair_config = defaultdict(lambda: [[0, -1]])
         for items in range(1, num_pass + num_par):
             car = np.random.choice(num_cars, 1)[0]
             if items > num_pass and items <= num_pass + num_par:
-                pair_config[car + 1].append([items, -1])
-                pair_config[car + 1].append([items + num_par + num_pass, -1])
+                config[car + 1].append([items])
+                config[car + 1].append([items + num_par + num_pass])
             elif items >= 1 and items <= num_pass:
-                pair_config[car + 1].append([items, items + num_par + num_pass])
+                config[car + 1].append([items])
         for i in range(1, num_cars + 1):
-            pair_config[i] = sorted(pair_config[i])
-            print(pair_config[i])
+            temp = list()
+            for j in config[i]:
+                if type(j) == list:
+                    temp.append(j[0])
+            sorted(temp)
+            for j in temp:
+                if j >= 1 and j <= num_pass:
+                    pair_config[i].append([j, j + num_par + num_pass])
+                else:
+                    pair_config[i].append([j, -1])
         return pair_config
-    '''
+    
     #* when meet a passenger, just take him, we can temporarily ignore he/she's destination
     def uniform_random_conf():
         pair_config = defaultdict(lambda: [[0, -1]])
@@ -42,8 +61,12 @@ def random_configuration(num_cars, num_par, num_pass, iter):
             pair_config[car + 1].extend(sorted(single_pair_conf))
         return pair_config
 
-    return uniform_random_conf()
+    if iter&1:
+        return uniform_random_conf()
+    else:
+        return random_conf()
 
+# Get full config
 def return_true_config(given_config, num_pass, num_par):
     true_config = []
     for i in given_config:
@@ -53,6 +76,7 @@ def return_true_config(given_config, num_pass, num_par):
     return true_config
     
     
+# Calculate the distance    
 def cal_distance(config, distance_matrix, num_pass, num_par):
         cost = 0
         explore = []
@@ -99,12 +123,19 @@ if __name__ == "__main__":
     
     final_res = 1e9
     final_res_config = []
-    
-    for iter in range(10):
+    """
+    * Here, I run the genetic algorithm 16 times
+    * so that we have higher chance to get better solution
+    """
+    for iter in range(16):
         # print(f"iter {iter}:")
         res_conf = []
         dict_schedule = random_configuration(num_cars, num_par, num_pass, iter)
         max_res_each_config = 0
+        
+        """
+        * With each config, we have k routes, now I will use GA on each route
+        """
         for id_bus, schedule in dict_schedule.items():
             ga = genetic.Genetic_Algorithm(schedule, num_cities, matrix_distance, num_pass, num_pass, cars_capacities[id_bus - 1], q)
             # print("Initial schedule is: ", schedule)
@@ -127,7 +158,10 @@ if __name__ == "__main__":
         for i in true_config:
             print(i, end = " ")
         print(f"- {cal_distance(true_config, matrix_distance, num_pass, num_par)}")    
-    print(final_res)
+    print(final_res) 
+    
     
     total_running_time = time.time() - ga_start_time
     print(f"Running time = {total_running_time}")
+    
+    # DONE WITH GENETIC ALGORITHM
