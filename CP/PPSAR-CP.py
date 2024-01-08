@@ -2,15 +2,17 @@ from ortools.sat.python import cp_model
 import sys
 import time
 
-
 def input_data(file_path):
     data = {}
     f = open(file_path, "r")
     
     N, M, K = map(int, f.readline().split())
+    q = [int(x) for x in f.readline().split()]
     
-    data["parcel_amount"] = [0 for i in range(N+1)]
-    data["parcel_amount"].extend([int(q) for q in f.readline().split()])
+    data["parcel_number"] = [0 for i in range(2*N + 2*M + 2)]
+    for i in range(N + 1, M + N + 1):
+        data["parcel_number"][i] = q[i - N - 1]
+        data["parcel_number"][i + N + M] = - q[i - N - 1]
     
     data["capacity"] = [0]
     data["capacity"].extend([int(Q) for Q in f.readline().split()])
@@ -24,12 +26,9 @@ def input_data(file_path):
     return N, M, K, data
 
 if __name__ == '__main__':
-    
+
     #Input
-    s = "3"
-    file_path = f"D:\\GIT\\Optimization-mini-project\\Test\\TESTCASE\\test{s}.txt"
-    print(file_path)
-    
+    file_path = sys.argv[1]
     N, M, K, data = input_data(file_path)
     
     start_time = time.time()
@@ -49,7 +48,7 @@ if __name__ == '__main__':
                 for k in range(1, K + 1):
                     X[i][j][k] = model.NewIntVar(0, 1, 'X[%d][%d][%d]' % (i, j, k))
     
-    #Y[k][j]: the amount of parcel in the k-th taxis after it leaves j-th point
+    #Y[k][j]: the number of parcel in the k-th taxis after it leaves j-th point
                     
     Y = [[0 for i in range(2*N + 2*M + 2)] for i in range(K + 1)]
                     
@@ -101,7 +100,7 @@ if __name__ == '__main__':
         model.AddExactlyOne(out_deg_start)
         model.AddExactlyOne(in_deg_end)
         
-    #For each taxi, in_degree  of start point and out_degree of end point are equal to 0
+    #For each taxi, in_degree of start point and out_degree of end point are equal to 0
     for k in range(1, K + 1):
         in_deg_start = []
         out_deg_end = []
@@ -110,36 +109,7 @@ if __name__ == '__main__':
             out_deg_end.append(X[2*N + 2*M + 1][i][k])
         model.Add(sum(in_deg_start) == 0)
         model.Add(sum(out_deg_end) == 0)
-    
-    #If the k-th taxis pick up a passenger at i-th point, it must move to i+N+M-th point instantly
-    #(No stopping point between i-th point and i+N+M-th point)    
-    for k in range (1, K + 1):
-        for i in range(0, 2*N + 2*M + 1):
-            for j in range(1, N+1):
-                if i != j:
-                    b = model.NewBoolVar('b')
-                    model.Add(X[i][j][k] == 1).OnlyEnforceIf(b)
-                    model.Add(X[i][j][k] != 1).OnlyEnforceIf(b.Not())
-                    model.Add(X[j][j + N + M][k] == 1).OnlyEnforceIf(b)
-    
-    #If the k-th taxi move from i-th point to j-th point (j in range N+1 - N+M) ==> Y[k][j] = Y[k][i] + data["parcel_amount"][j]
-    #If the k-th taxi move from i-th point to j-th point (j in range 2N+M+1 - 2N+2M) ==> Y[k][j] = Y[k][i] - data["parcel_amount"][j - M - N]                
-    for k in range(1, K + 1):
-        for i in range(0, 2*N + 2*M + 1):
-            for j in range(N + 1, N + M + 1):
-                if i != j:
-                    b = model.NewBoolVar('b')
-                    model.Add(X[i][j][k] == 1).OnlyEnforceIf(b)
-                    model.Add(X[i][j][k] != 1).OnlyEnforceIf(b.Not())
-                    model.Add(Y[k][j] == Y[k][i] + data["parcel_amount"][j]).OnlyEnforceIf(b)
-
-            for j in range(2*N + M + 1, 2*N + 2*M + 1):
-                if i != j:
-                    b = model.NewBoolVar('b')
-                    model.Add(X[i][j][k] == 1).OnlyEnforceIf(b)
-                    model.Add(X[i][j][k] != 1).OnlyEnforceIf(b.Not())
-                    model.Add(Y[k][j] == Y[k][i] - data["parcel_amount"][j - N - M]).OnlyEnforceIf(b)
-    
+        
     #For each taxi, out_degree of i-th point and in_degree of i+N+M-th point are equal                
     for k in range(1, K + 1):
         for i in range(N+1, N+M+1):
@@ -152,13 +122,33 @@ if __name__ == '__main__':
                     in_deg_iNM.append(X[j][i+N+M][k])
             model.Add(sum(out_deg_i) == sum(in_deg_iNM))
     
-    #For each taxi, the amount of parcel after it leaves the start point is 0    
-    for k in range(1, K + 1):
-        model.Add(Y[k][0] == 0)
+    #If the k-th taxis pick up a passenger at i-th point, it must move to i+N+M-th point instantly
+    #(No stopping point between i-th point and i+N+M-th point)    
+    for k in range (1, K + 1):
+        for i in range(0, 2*N + 2*M + 1):
+            for j in range(1, N+1):
+                if i != j:
+                    b = model.NewBoolVar('b')
+                    model.Add(X[i][j][k] == 1).OnlyEnforceIf(b)
+                    model.Add(X[i][j][k] != 1).OnlyEnforceIf(b.Not())
+                    model.Add(X[j][j + N + M][k] == 1).OnlyEnforceIf(b)
     
-    #For each taxi, the order of start point is 0           
+    #If the k-th taxi move from i-th point to j-th point (j in range N+1 - N+M) ==> Y[k][j] = Y[k][i] + data["parcel_number"][j]                
     for k in range(1, K + 1):
-        model.Add(Z[k][0] == 0)
+        for i in range(0, 2*N + 2*M + 1):
+            for j in range(2*N + 2*M + 2):
+                if i != j:
+                    b = model.NewBoolVar('b')
+                    model.Add(X[i][j][k] == 1).OnlyEnforceIf(b)
+                    model.Add(X[i][j][k] != 1).OnlyEnforceIf(b.Not())
+                    model.Add(Y[k][j] == Y[k][i] + data["parcel_number"][j]).OnlyEnforceIf(b)
+
+            '''for j in range(2*N + M + 1, 2*N + 2*M + 1):
+                if i != j:
+                    b = model.NewBoolVar('b')
+                    model.Add(X[i][j][k] == 1).OnlyEnforceIf(b)
+                    model.Add(X[i][j][k] != 1).OnlyEnforceIf(b.Not())
+                    model.Add(Y[k][j] == Y[k][i] - data["parcel_number"][j - N - M]).OnlyEnforceIf(b)'''
     
     #If the k-th taxi move from i-th point to j-th point then Z[k][j] = Z[k][i] + 1    
     for k in range(1, K + 1):
@@ -170,12 +160,22 @@ if __name__ == '__main__':
                     model.Add(X[i][j][k] != 1).OnlyEnforceIf(b.Not())
                     model.Add(Z[k][j] == Z[k][i] + 1).OnlyEnforceIf(b)
     
+    #For each taxi, the number of parcel after it leaves the start point is 0    
+    for k in range(1, K + 1):
+        model.Add(Y[k][0] == 0)
+    
+    #For each taxi, the order of start point is 0           
+    for k in range(1, K + 1):
+        model.Add(Z[k][0] == 0)
+        
+    #Constraint Y[k][i] <= Q[k] is solved by domain of variable Y[k][i]
+    
     #For each taxi, the order of i-th point always less than or equal the order of (i + N + M)-th point            
     for k in range(1, K + 1):
         for i in range(1, N + M + 1):
             model.Add(Z[k][i] <= Z[k][i + N + M])
     
-    #Set the 1st route is the longest route        
+    #Set the first route is the longest route        
     lengthOfRoute = [0]
     for k in range(1, K + 1):
         constrain_expr = []
@@ -188,33 +188,26 @@ if __name__ == '__main__':
     for k in range(2, K + 1):
         model.Add(lengthOfRoute[1] >= lengthOfRoute[k])
     
-    #Minimize the length of 1st route
+    #Minimize the length of the first route
     model.Minimize(lengthOfRoute[1])
     solver = cp_model.CpSolver()
     status = solver.Solve(model)
     
     #Print output
-    ou_file = f"D:\GIT\Optimization-mini-project\Test\PPSAR-CP\\test{s}.txt"
+    print(f'Objective value: {solver.ObjectiveValue()}')
     
-    with open(ou_file, "w") as stdout:
-        sys.stdout = stdout
-        
-        print(f'Objective value: {solver.ObjectiveValue()}')
-        
-        for k in range(1, K + 1):
-                path = [0]
-                length = 0
-                while path[-1] != 2*N + 2*M + 1:
-                    for i in range(2*N + 2*M + 2):
-                        if i != path[-1]:
-                            if solver.Value(X[path[-1]][i][k]) == 1:
-                                path.append(i)
-                                length += data["distance"][path[-2]][i]
-                                break
-                print(f"Xe {k}:", ' --> '.join(map(str, path)), ', length =', length, ',count =', len(path))
-        
-        #Running time
-        end_time = time.time()
-        print(f'Running time        : {end_time - start_time} seconds' )
-        
-        sys.stdout = sys.__stdout__
+    for k in range(1, K + 1):
+            path = [0]
+            length = 0
+            while path[-1] != 2*N + 2*M + 1:
+                for i in range(2*N + 2*M + 2):
+                    if i != path[-1]:
+                        if solver.Value(X[path[-1]][i][k]) == 1:
+                            path.append(i)
+                            length += data["distance"][path[-2]][i]
+                            break
+            print(f"Xe {k}:", ' --> '.join(map(str, path)), ', length =', length, ',count =', len(path))
+    
+    #Running time
+    end_time = time.time()
+    print(f'Running time        : {end_time - start_time} seconds' )

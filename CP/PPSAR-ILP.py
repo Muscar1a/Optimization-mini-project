@@ -1,15 +1,18 @@
 from ortools.linear_solver import pywraplp
-import time
 import sys
+import time
 
 def input_data(file_path):
     data = {}
     f = open(file_path, "r")
     
     N, M, K = map(int, f.readline().split())
+    q = [int(x) for x in f.readline().split()]
     
-    data["parcel_amount"] = [0 for i in range(N+1)]
-    data["parcel_amount"].extend([int(q) for q in f.readline().split()])
+    data["parcel_number"] = [0 for i in range(2*N + 2*M + 2)]
+    for i in range(N + 1, M + N + 1):
+        data["parcel_number"][i] = q[i - N - 1]
+        data["parcel_number"][i + N + M] = - q[i - N - 1]
     
     data["capacity"] = [0]
     data["capacity"].extend([int(Q) for Q in f.readline().split()])
@@ -25,10 +28,7 @@ def input_data(file_path):
 if __name__ == "__main__":
     
     #input
-    
-    s = "2"
-    file_path = f"D:\\GIT\\Optimization-mini-project\\Test\\TESTCASE\\test{s}.txt"
-    print(file_path)
+    file_path = sys.argv[1]
     N, M, K, data = input_data(file_path)
     
     start_time = time.time()
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     alpha = 1000000
     
     #Create variable
-    
+     
     #X[i][j][k] = 1 if the k-th taxis move from i-th point to j-th point, otherwise X[i][j][k] = 0
     
     X = [[[0 for k in range(K + 1)] for j in  range(2*M + 2*N + 2)] for i in range(2*M + 2*N + 2)]
@@ -50,7 +50,7 @@ if __name__ == "__main__":
                 for k in range(1, K + 1):
                     X[i][j][k] = solver.IntVar(0, 1, 'X[%d][%d][%d]' % (i, j, k))
     
-    #Y[k][j]: the amount of parcel in the k-th taxis after it leaves j-th point
+    #Y[k][j]: the number of parcel in the k-th taxis after it leaves j-th point
     
     Y = [[0 for i in range(2*N + 2*M + 2)] for i in range(K + 1)]
                     
@@ -111,29 +111,6 @@ if __name__ == "__main__":
         solver.Add(sum(in_deg_start) == 0)
         solver.Add(sum(out_deg_end) == 0)
         
-    #If the k-th taxis pick up a passenger at i-th point, it must move to i+N+M-th point instantly
-    #(No stopping point between i-th point and i+N+M-th point)
-    for k in range (1, K + 1):
-        for i in range(0, 2*N + 2*M + 1):
-            for j in range(1, N+1):
-                if i != j:
-                    solver.Add(alpha*(1 - X[i][j][k]) + 1 >= X[j][j+N+M][k])
-                    solver.Add(alpha*(1 - X[i][j][k]) + X[j][j+N+M][k] >= 1)
-    
-    #If the k-th taxi move from i-th point to j-th point (j in range N+1 - N+M) ==> Y[k][j] = Y[k][i] + data["parcel_amount"][j]
-    #If the k-th taxi move from i-th point to j-th point (j in range 2N+M+1 - 2N+2M) ==> Y[k][j] = Y[k][i] - data["parcel_amount"][j - M - N]
-    for k in range(1, K + 1):
-        for i in range(0, 2*N + 2*M + 1):
-            for j in range(N + 1, N + M + 1):
-                if i != j:
-                    solver.Add(alpha*(1 - X[i][j][k]) + Y[k][j] >= Y[k][i] + data["parcel_amount"][j])
-                    solver.Add(alpha*(1 - X[i][j][k]) + Y[k][i] + data["parcel_amount"][j] >= Y[k][j])
-
-            for j in range(2*N + M + 1, 2*N + 2*M + 1):
-                if i != j:
-                    solver.Add(alpha*(1 - X[i][j][k]) + Y[k][j] >= Y[k][i] - data["parcel_amount"][j - M - N])
-                    solver.Add(alpha*(1 - X[i][j][k]) + Y[k][i] - data["parcel_amount"][j - M - N] >= Y[k][j])
-                    
     #For each taxi, out_degree of i-th point and in_degree of i+N+M-th point are equal
     for k in range(1, K + 1):
         for i in range(N + 1, N+M+1):
@@ -146,19 +123,42 @@ if __name__ == "__main__":
                     in_deg_iNM.append(X[j][i+N+M][k])
         
             solver.Add(sum(out_deg_i) == sum(in_deg_iNM))
-    
-    for k in range(1, K + 1):
-        solver.Add(Y[k][0] == 0)
         
+    #If the k-th taxis pick up a passenger at i-th point, it must move to i+N+M-th point instantly
+    #(No stopping point between i-th point and i+N+M-th point)
+    for k in range (1, K + 1):
+        for i in range(0, 2*N + 2*M + 1):
+            for j in range(1, N+1):
+                if i != j:
+                    solver.Add(alpha*(1 - X[i][j][k]) + 1 >= X[j][j+N+M][k])
+                    solver.Add(alpha*(1 - X[i][j][k]) + X[j][j+N+M][k] >= 1)
+    
+    #If the k-th taxi move from i-th point to j-th point (j in range N+1 - N+M) ==> Y[k][j] = Y[k][i] + data["parcel_number"][j]
     for k in range(1, K + 1):
-        solver.Add(Z[k][0] == 0)
-            
+        for i in range(0, 2*N + 2*M + 1):
+            for j in range(0, 2*N + 2*M + 2):
+                if i != j:
+                    solver.Add(alpha*(1 - X[i][j][k]) + Y[k][j] >= Y[k][i] + data["parcel_number"][j])
+                    solver.Add(alpha*(1 - X[i][j][k]) + Y[k][i] + data["parcel_number"][j] >= Y[k][j])
+                    
+    #If the k-th taxi move from i-th point to j-th point then Z[k][j] = Z[k][i] + 1        
     for k in range(1, K + 1):
         for i in range(2*N + 2*N + 1):
             for j in range(1, 2*N + 2*N + 2):
                 solver.Add(alpha * (1 - X[i][j][k]) + Z[k][j] >= Z[k][i] + 1)
                 solver.Add(alpha * (1 - X[i][j][k]) + Z[k][i] + 1 >= Z[k][j])
-                
+    
+    #For each taxi, the number of parcel after it leaves the start point is 0
+    for k in range(1, K + 1):
+        solver.Add(Y[k][0] == 0)
+    
+    #For each taxi, the order of start point is 0    
+    for k in range(1, K + 1):
+        solver.Add(Z[k][0] == 0)
+        
+    #Constraint Y[k][i] <= Q[k] is solved by domain of variable Y[k][i]
+    
+    #For each taxi, the order of i-th point always less than or equal the order of (i + N + M)-th point            
     for k in range(1, K + 1):
         for i in range(1, N + M + 1):
             solver.Add(Z[k][i] <= Z[k][i + N + M])
@@ -181,26 +181,21 @@ if __name__ == "__main__":
     status = solver.Solve()
     
     #Print output
+    if status == pywraplp.Solver.OPTIMAL or status == pywraplp.Solver.FEASIBLE:
+        print(f'Objective value: {solver.Objective().Value()}')
+        for k in range(1, K + 1):
+            path = [0]
+            length = 0
+            while path[-1] != 2*N + 2*M + 1:
+                for i in range(2*N + 2*M + 2):
+                    if i != path[-1]:
+                        if X[path[-1]][i][k].solution_value() == 1:
+                            path.append(i)
+                            length += data["distance"][path[-2]][i]
+                            break
+            print(f"Xe {k}:", ' --> '.join(map(str, path)), ', length =', length, ',count =', len(path))
+            
+    end_time = time.time()
+            
+    print(f'Running time        : {end_time - start_time} seconds' )
     
-    ou_file = f"D:\GIT\Optimization-mini-project\Test\PPSAR-ILP\\test{s}.txt"
-    with open(ou_file, "w") as stdout:
-        sys.stdout = stdout
-        if status == pywraplp.Solver.OPTIMAL or status == pywraplp.Solver.FEASIBLE:
-            print(f'Objective value: {solver.Objective().Value()}')
-            for k in range(1, K + 1):
-                path = [0]
-                length = 0
-                while path[-1] != 2*N + 2*M + 1:
-                    for i in range(2*N + 2*M + 2):
-                        if i != path[-1]:
-                            if X[path[-1]][i][k].solution_value() == 1:
-                                path.append(i)
-                                length += data["distance"][path[-2]][i]
-                                break
-                print(f"Xe {k}:", ' --> '.join(map(str, path)), ', length =', length, ',count =', len(path))
-                
-        end_time = time.time()
-                
-        print(f'Running time        : {end_time - start_time} seconds' )
-        
-        sys.stdout = sys.__stdout__
