@@ -38,7 +38,7 @@ if __name__ == '__main__':
     
     #Create variables
     
-    #X[i][j][k] = 1 if the k-th taxis move from i-th point to j-th point, otherwise X[i][j][k] = 0
+    #X[i][j][k] = 1 if the k-th taxi travels from i-th point to j-th point, otherwise X[i][j][k] = 0
     
     X = [[[0 for k in range(K + 1)] for j in  range(2*M + 2*N + 2)] for i in range(2*M + 2*N + 2)]
     
@@ -48,7 +48,7 @@ if __name__ == '__main__':
                 for k in range(1, K + 1):
                     X[i][j][k] = model.NewIntVar(0, 1, 'X[%d][%d][%d]' % (i, j, k))
     
-    #Y[k][j]: the number of parcel in the k-th taxis after it leaves j-th point
+    #Y[k][j]: the number of parcels in the k-th taxi after it leaves j-th point
                     
     Y = [[0 for i in range(2*N + 2*M + 2)] for i in range(K + 1)]
                     
@@ -122,7 +122,7 @@ if __name__ == '__main__':
                     in_deg_iNM.append(X[j][i+N+M][k])
             model.Add(sum(out_deg_i) == sum(in_deg_iNM))
     
-    #If the k-th taxis pick up a passenger at i-th point, it must move to i+N+M-th point instantly
+    #If the k-th taxi picks up a passenger at i-th point, it must travel to i+N+M-th point instantly
     #(No stopping point between i-th point and i+N+M-th point)    
     for k in range (1, K + 1):
         for i in range(0, 2*N + 2*M + 1):
@@ -133,7 +133,7 @@ if __name__ == '__main__':
                     model.Add(X[i][j][k] != 1).OnlyEnforceIf(b.Not())
                     model.Add(X[j][j + N + M][k] == 1).OnlyEnforceIf(b)
     
-    #If the k-th taxi move from i-th point to j-th point (j in range N+1 - N+M) ==> Y[k][j] = Y[k][i] + data["parcel_number"][j]                
+    #If the k-th taxi travels from i-th point to j-th point then Y[k][j] = Y[k][i] + data["parcel_number"][j]                
     for k in range(1, K + 1):
         for i in range(0, 2*N + 2*M + 1):
             for j in range(2*N + 2*M + 2):
@@ -142,15 +142,8 @@ if __name__ == '__main__':
                     model.Add(X[i][j][k] == 1).OnlyEnforceIf(b)
                     model.Add(X[i][j][k] != 1).OnlyEnforceIf(b.Not())
                     model.Add(Y[k][j] == Y[k][i] + data["parcel_number"][j]).OnlyEnforceIf(b)
-
-            '''for j in range(2*N + M + 1, 2*N + 2*M + 1):
-                if i != j:
-                    b = model.NewBoolVar('b')
-                    model.Add(X[i][j][k] == 1).OnlyEnforceIf(b)
-                    model.Add(X[i][j][k] != 1).OnlyEnforceIf(b.Not())
-                    model.Add(Y[k][j] == Y[k][i] - data["parcel_number"][j - N - M]).OnlyEnforceIf(b)'''
     
-    #If the k-th taxi move from i-th point to j-th point then Z[k][j] = Z[k][i] + 1    
+    #If the k-th taxi travels from i-th point to j-th point then Z[k][j] = Z[k][i] + 1    
     for k in range(1, K + 1):
         for i in range(2*N + 2*N + 1):
             for j in range(1, 2*N + 2*N + 2):
@@ -160,7 +153,7 @@ if __name__ == '__main__':
                     model.Add(X[i][j][k] != 1).OnlyEnforceIf(b.Not())
                     model.Add(Z[k][j] == Z[k][i] + 1).OnlyEnforceIf(b)
     
-    #For each taxi, the number of parcel after it leaves the start point is 0    
+    #For each taxi, the number of parcels after it leaves the start point is 0    
     for k in range(1, K + 1):
         model.Add(Y[k][0] == 0)
     

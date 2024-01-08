@@ -39,8 +39,8 @@ if __name__ == "__main__":
     alpha = 1000000
     
     #Create variable
-     
-    #X[i][j][k] = 1 if the k-th taxis move from i-th point to j-th point, otherwise X[i][j][k] = 0
+    
+    #X[i][j][k] = 1 if the k-th taxi travels from i-th point to j-th point, otherwise X[i][j][k] = 0
     
     X = [[[0 for k in range(K + 1)] for j in  range(2*M + 2*N + 2)] for i in range(2*M + 2*N + 2)]
     
@@ -50,7 +50,7 @@ if __name__ == "__main__":
                 for k in range(1, K + 1):
                     X[i][j][k] = solver.IntVar(0, 1, 'X[%d][%d][%d]' % (i, j, k))
     
-    #Y[k][j]: the number of parcel in the k-th taxis after it leaves j-th point
+    #Y[k][j]: the number of parcels in the k-th taxi after it leaves j-th point
     
     Y = [[0 for i in range(2*N + 2*M + 2)] for i in range(K + 1)]
                     
@@ -124,7 +124,7 @@ if __name__ == "__main__":
         
             solver.Add(sum(out_deg_i) == sum(in_deg_iNM))
         
-    #If the k-th taxis pick up a passenger at i-th point, it must move to i+N+M-th point instantly
+    #If the k-th taxi picks up a passenger at i-th point, it must travel to i+N+M-th point instantly
     #(No stopping point between i-th point and i+N+M-th point)
     for k in range (1, K + 1):
         for i in range(0, 2*N + 2*M + 1):
@@ -133,7 +133,7 @@ if __name__ == "__main__":
                     solver.Add(alpha*(1 - X[i][j][k]) + 1 >= X[j][j+N+M][k])
                     solver.Add(alpha*(1 - X[i][j][k]) + X[j][j+N+M][k] >= 1)
     
-    #If the k-th taxi move from i-th point to j-th point (j in range N+1 - N+M) ==> Y[k][j] = Y[k][i] + data["parcel_number"][j]
+    #If the k-th taxi travels from i-th point to j-th point then Y[k][j] = Y[k][i] + data["parcel_number"][j]
     for k in range(1, K + 1):
         for i in range(0, 2*N + 2*M + 1):
             for j in range(0, 2*N + 2*M + 2):
@@ -141,7 +141,7 @@ if __name__ == "__main__":
                     solver.Add(alpha*(1 - X[i][j][k]) + Y[k][j] >= Y[k][i] + data["parcel_number"][j])
                     solver.Add(alpha*(1 - X[i][j][k]) + Y[k][i] + data["parcel_number"][j] >= Y[k][j])
                     
-    #If the k-th taxi move from i-th point to j-th point then Z[k][j] = Z[k][i] + 1        
+    #If the k-th taxi travels from i-th point to j-th point then Z[k][j] = Z[k][i] + 1        
     for k in range(1, K + 1):
         for i in range(2*N + 2*N + 1):
             for j in range(1, 2*N + 2*N + 2):
@@ -163,7 +163,7 @@ if __name__ == "__main__":
         for i in range(1, N + M + 1):
             solver.Add(Z[k][i] <= Z[k][i + N + M])
             
-    #Set the 1st route is the longest route
+    #Set the first route is the longest route
     lengthOfRoute = [0]
     for k in range(1, K + 1):
         constrain_expr = []
@@ -176,7 +176,7 @@ if __name__ == "__main__":
     for k in range(2, K + 1):
         solver.Add(lengthOfRoute[1] >= lengthOfRoute[k])
     
-    #Minimize the length of 1st route              
+    #Minimize the length of first route              
     solver.Minimize(lengthOfRoute[1])
     status = solver.Solve()
     
