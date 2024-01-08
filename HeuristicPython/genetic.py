@@ -143,7 +143,11 @@ class Genetic_Algorithm():
         child1 = temp2 + temp1 + temp3
         child2 = self.satisfied_config(child1)
         return child1, child2
-    
+        """
+        * Here I use two points crossover, mr Dung asked about the problem if the offspring might loss their parents' characteristics,
+        * but after a few draft, and according to my code, the offsprings are guaranteed to have their parents' characteristic,
+        * we just need to pay attention to the capacity of the car, which is done in the satisfied_config function.
+        """
     
     def mutation(self, config):
         check = [[0, 0] for i in range(self.num_par + self.num_pass)]
@@ -164,14 +168,17 @@ class Genetic_Algorithm():
         return new_config
             
     
-    def solving_gene(self, maxIter=10, num_genes=40, crossover_rate=0.4, mutation_rate=0.1, num_elites=5):
+    def solving_gene(self, maxIter=15, num_genes=40, crossover_rate=0.4, mutation_rate=0.1, num_elites=5):
         population = []
         while len(population) != num_genes:
             initial_gene = self.generateValidState()
             population.append([initial_gene, self.cal_distance(self.return_true_config(initial_gene))])
+        #* This is the population creation step    
+        
         # print("\n\nGene step")
         population.sort(key=lambda x: x[1])
         elites_pop = copy.deepcopy(population[:num_elites])
+        #* elites_pop is a list to store top 5 best chromosomes
         cur_opt_cost = 0
         cur_opt_config = []
         cnt = 0
@@ -183,7 +190,10 @@ class Genetic_Algorithm():
             while j < num_genes//4:
                 j += 1
                 for elite in elites_pop:
-                    #* We should try to crossover, then mutate
+                    """
+                    * Actually we don't have to for each elite in the elites_pop, but when I was coding this,
+                    * I was so confused, so I wrote whatever came to my mind at that time.
+                    """
                     cross = random.random()
                     if cross > crossover_rate:
                         # crossover randomly
